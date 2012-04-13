@@ -31,7 +31,7 @@
 
 
 \author{Czinkos Zsolt}
-\title{Erlang/OTP: magas rendelkezésre állású webalkalmazások fejlesztése}
+\title{Erlang/OTP: magas rendelkezésre állású elosztott rendszerek fejlesztése}
 \date{2012-04-28}
 
 \begin{document}
@@ -133,8 +133,9 @@ a telekommunikációs iparban szokásos rendkívül magas elvárásoknak megfele
 Az Erlang megalkotásánál az elsődleges cél magas rendelkezésre állású
 (\emph{highly available}), hibatűrő (\emph{fault tolerant}) redundáns
 rendszerek építése volt. Ez az, amire az Erlang igazán alkalmas, ez az a
-terület, ahol az Erlangnak évtizedes múltja van: akár 99,99999\%-os
-rendelkezésre állás biztosításában. Az hozzávetőleg 5 perc kiesés évente.
+terület, ahol az Erlangnak évtizedes múltja van: akár 99,999\%-os
+rendelkezésre állás biztosításában. Az hozzávetőleg 5 perc kiesés
+évente \citep{WikipediaNines}.
 
 1998-ban open source-szá vált a nyelv és a platformot adó
 szoftverkönyvtárak, azóta bárki használhatja bármilyen feladatra, számos
@@ -144,29 +145,33 @@ adatbáziskezelőt, stb.
 \newpage
 
 \chapter{Elméleti alapok}
-\section{Erlang}
-\section{Open Telecom Platform}
 \section{Funkcionális programozás}
 \section{Aktor modell}
-\section{distributed systems, cap theorem}
+\section{Az Erlang programozási nyelv}
+\section{Open Telecom Platform}
+Behaviours. Supervisor hierarchies.
+\section{Egy gép nem gép: elosztott rendszerek}
+Erlang nodes. CAP theorem.
 
-\chapter{Gyakorlati probléma tágabb kontextusának bemutatása}
-\section{bevezető rizsa jön ide + a példaprogram, ami egy sima messaging
-alkalmazás, chat vagy ilyesmi, esetleg egyszerű map reduce példa}
+\chapter{Soft realtime messaging -- a simple demo}
 
-\chapter{Erlang application}
-\section{Programozás}
-\section{Fault tolerance}
+\chapter{A messaging szerver}
+\section{Felépítés}
+\section{Hibatűrés}
 \section{Elosztott rendszer -- kell a redundancia}
 
-\chapter{Web}
+\chapter{Web interfész}
 \section{RESTful webservices}
 \section{HTML5 -- websockets}
 
 \chapter{Üzemeltetés, karbantartás}
 \section{Naplózás}
+Event manager, event handler.
 \section{Hibakeresés}
+Trace.
 \section{Hibajavítás, verzióléptetés}
+Upgrade.
+\section{Szállítás}
 
 \chapter{Alkalmazási lehetőségek, kitekintés}
 
