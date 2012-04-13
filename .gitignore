@@ -1,1 +1,6 @@
-*.toc *.idx *.aux *.ilg *.log tmp
+*.toc
+*.idx
+*.ind
+*.aux
+*.ilg
+*.log
