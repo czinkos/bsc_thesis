@@ -1,0 +1,237 @@
+\documentclass[12pt, a4paper, oneside]{book}
+\usepackage[left=3.5cm, top=2.5cm, right=2.5cm, bottom=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,hungarian]{babel}
+\selectlanguage{hungarian}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{makeidx}
+\usepackage{natbib}
+\usepackage{url}
+
+\makeindex
+
+\newenvironment{abstract}
+{\newpage \pagestyle{empty} \vspace*{\fill} \begin{center}\em{Absztrakt}\end{center}}
+{\vspace*{\fill} \newpage}
+
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{%
+\markboth{\thechapter.%
+\ \chaptername.\ #1}{}}
+
+\fancyhead[L]{}
+
+
+%\renewcommand\lstlistingname{ábra}
+%\renewcommand\lstlistlistingname{Ábrák}
+\lstset{caption=\thelstlisting. \lstlistingname}
+
+
+\author{Czinkos Zsolt}
+\title{Erlang/OTP: magas rendelkezésre állású webalkalmazások fejlesztése}
+\date{2012-04-28}
+
+\begin{document}
+\maketitle
+
+\onehalfspacing
+
+\begin{abstract}
+Az Erlang programozási nyelvet az Ericssonnál hozták létre hálózati
+eszközök, telefonrendszerek programozására. A magas telekom elvárások
+tükröződnek az Erlangban fejlesztett rendszerek architektúrájában,
+amely az Open Telecom Platform szoftverkönyvtárban ölt testet. A dolgozat
+bemutatja az Erlang programozási nyelvet, a fejlesztési elveket és
+alkalmazási lehetőségeit a webes technológiára épülő alkalmazások területén.
+\end{abstract}
+
+\newpage
+\pagestyle{empty}
+\vspace*{\fill} 
+\hfill \emph{Mindenkinek, aki szereti}
+\vspace*{\fill} 
+\newpage
+
+\pagestyle{fancy}
+
+\tableofcontents
+
+\chapter{Bevezetés}
+
+Az Internet -- azon belül különösen a Web -- terjedésével párhuzamosan nőtt az
+igény kiszámítható, jó minőségű szolgáltatásokra. A szolgáltatóknak egyre
+magasabb elvárásoknak kell megfelelnie -- nem utolsó sorban azért, mert a
+felhasználók fejében a web és az ingyenes tartalom összeforrt. Még színvonalas
+termékekért is nehezen adnak ki pénzt, nemhogy hibás, elavult tartalomért,
+akadozó és kiszámíthatatlanul működő szolgáltatásokért. Ma már a hálózat nem
+csupán mérnököknek, kutatóknak érdekes kábelezést jelent, amely így-úgy hasznos
+a tudományos kutatásaik során, hanem a mindennapi élet részét képező társadalmi
+kapcsolatok \textit{reprezentációját} is. A felhasználó egyre aktívabb
+\textit{cselekvője} ezeknek a valós vagy virtuális világban létrejött
+hálózatoknak, egyre inkább itt keresi (és többnyire találja meg) azt a teret,
+ahol ismerik, és ő is ismer, ahol ura annak az eszköztárnak, amelynek
+birtokában különböző -- rövid, prompt, aszinkron, szöveg, hang vagy videó --
+\textit{üzenetek} segítségével ápolni tudja kapcsolatait. Ez a
+kapcsolatrendszer és eszköztár jelenti azt az új mikroikozmoszt, amelyben a
+felhasználó -- cselekvő- és befolyásolóképessége tudatában -- kényelemben és
+biztonságban érzi magát.
+
+Ez a kényelem és biztonság \textit{függővé} tesz: világunk megszokott
+működésének zavarait nehezen vagy egyáltalán nem tudjuk tolerálni,
+kiszolgáltatottnak és tehetetlennek érezzük magunkat. Ilyenkor derül ki, hogy
+bár mikrokozmoszunkat ismerni véljük, az azt működtető rendszer elemeit meg sem
+tudjuk nevezni, csak azt tudjuk, hogy \glqq{}van\textquotedblright{} (ez a
+valami pillanatnyilag a legtöbb ember számára néhány cég szolgáltatásában ölt
+testet: Facebook, Google, Twitter). A szoftverfejlesztőknek, tervezőknek ennek
+a világnak a működtetéséhez szükséges rendszert kell tudniuk megépíteni és
+üzemeltetni úgy, hogy a felhasználók a lehető legkevesebb alkalommal
+szembesüljenek azzal, hogy kihúzták alóluk a talajt. Nem emberbaráti, hanem
+üzleti megfontolások miatt.
+
+A weben a sikerhez elengedhetetlen a folyamatos és megbízható szolgáltatás,
+nagyon alacsony az ingerküszöb, ha egy oldal betöltődése tovább tart mint 4
+másodperc, már odébb is állt a felhasználó \citep{AkamaiReport}.  Ha túl
+sokszor kap hibaüzenetet -- amitől jobb esetben ingerült lesz, rosszabb esetben
+halálra rémül, hátha ő rontott el valamit --, keres mást. Éppen ezért nagyon
+fontos, hogy olyan rendszert építsünk, amely 
+
+\begin{enumerate} 
+  \item folyamatosan, megszakítás nélkül működik;
+  \item megfelelő válaszidővel, sebességgel működik;
+  \item funkcionálisan jól működik;
+  \item a felmerülő hibák nyomon követhetők, kezelhetők.
+\end{enumerate}
+
+A fentebb már említett vezető webes cégek mind megfelelnek ezeknek a
+követelményeknek, persze nem kevés munka és pénz árán. A felhasználót azonban a
+legkevésbé sem érdekli, hogy a szolgáltatást nyújtó üzleti vállalkozás hogyan
+tudja működtetni rendszerét, hány embert alkalmaz, stb. Őt az érdekli, hogy
+neki ingyen vagy elérhető áron a lehető legtöbbet nyújtsa. Ez az elvárása
+sajnos (vagy szerencsére) nem csak a mammutcégekkel szemben áll fent, hanem
+minden webes céggel szemben, mindenhol szeretné megkapni azt a minőséget,
+amihez hozzászokott. Azt a céget tekinti profinak, jónak, amely ugyanazt tudja
+nyújtani. Ha egy cég sikert akar, akkor már induláskor fel kell készülnie arra,
+hogy ha elsül a kapanyél, és özönlenek a felhasználók, akkor tartani tudja az
+iramot, ki tudja szolgálni ugrásszerűen megnőtt ügyfélkörét; miközben egy kezdő
+vállalkozás nem engedhet meg magának földrajzilag diverzifikált többtízezer
+gépes szerverparkot: kicsiből indulva kell képesnek lennie a növekedésre.
+
+Hogyan lehet olyan rendszert építeni, amellyel neki lehet vágni egy webes
+vállalkozásnak úgy, hogy ne kelljen attól félni, mi lesz, ha holnap regisztrál
+még 10 ezer felhasználó (4 másodperc!), vagy ha tönkremegy az egyik gép?
+
+Számos programozási nyelv és környezet közül lehet ma már választani, amely
+alkalmas erre a feladatra, ez a dolgozat az Erlang programozási nyelvet és a
+hozzá kapcsolódó Open Telecom Platform-ot (OTP) mutatja be. Az Erlang egy
+funkcionális programozási nyelv, amelyet az Ericsson fejlesztett ki mintegy 20
+évvel ezelőtt telefonrendszerek, szoftveres kapcsolóközpontok programozásához,
+a telekommunikációs iparban szokásos rendkívül magas elvárásoknak megfelelően. 
+
+Az Erlang megalkotásánál az elsődleges cél magas rendelkezésre állású
+(\emph{highly available}), hibatűrő (\emph{fault tolerant}) redundáns
+rendszerek építése volt. Ez az, amire az Erlang igazán alkalmas, ez az a
+terület, ahol az Erlangnak évtizedes múltja van: akár 99,99999\%-os
+rendelkezésre állás biztosításában. Az hozzávetőleg 5 perc kiesés évente.
+
+1998-ban open source-szá vált a nyelv és a platformot adó
+szoftverkönyvtárak, azóta bárki használhatja bármilyen feladatra, számos
+önkéntes és cég teszi be a közösbe a maga alkalmazását: HTTP szervert, NoSQL
+adatbáziskezelőt, stb.
+
+\newpage
+
+\chapter{Elméleti alapok}
+\section{Erlang}
+\section{Open Telecom Platform}
+\section{Funkcionális programozás}
+\section{Aktor modell}
+\section{distributed systems, cap theorem}
+
+\chapter{Gyakorlati probléma tágabb kontextusának bemutatása}
+\section{bevezető rizsa jön ide + a példaprogram, ami egy sima messaging
+alkalmazás, chat vagy ilyesmi, esetleg egyszerű map reduce példa}
+
+\chapter{Erlang application}
+\section{Programozás}
+\section{Fault tolerance}
+\section{Elosztott rendszer -- kell a redundancia}
+
+\chapter{Web}
+\section{RESTful webservices}
+\section{HTML5 -- websockets}
+
+\chapter{Üzemeltetés, karbantartás}
+\section{Naplózás}
+\section{Hibakeresés}
+\section{Hibajavítás, verzióléptetés}
+
+\chapter{Alkalmazási lehetőségek, kitekintés}
+
+\chapter{Összegzés}
+\appendix
+
+{\footnotesize
+
+\begin{lstlisting}[emph={fun}, emphstyle=\textbf, caption=Map reduce module, language=erlang, frame=single]
+-module(mapreduce).
+
+start() ->
+  spawn(fun() -> init() end).
+
+init() ->
+  loop().
+
+loop() ->
+  receive
+    {From, To, What} ->
+      io:format("~p sent to ~p a message ~p~n", [From,To,What]),
+      loop();
+    _ -> % avoid full msg box
+      io:format("Nothing. Finish.")
+  end.
+
+\end{lstlisting}
+}
+
+\begin{thebibliography}{9}
+
+\harvarditem[Armstrong]{}{2003}{ArmstrongThesis}
+Armstrong, Joe (2003): \emph{Making reliable distributed systems in the presence of software errors}. PhD.
+thesis, The Royal Institute of Technology Stockholm, Sweden. Web:
+\url{http://www.erlang.org/download/armstrong_thesis_2003.pdf}, letöltés dátuma: 2012-04-01
+
+\harvarditem[Armstrong]{}{2007}{ArmstrongBook}
+Armstrong, Joe (2007): \emph{Programming Erlang: Software for a Concurrent World}. USA: The Pragmatic
+Bookshelf.
+
+\harvarditem[Cesarini]{}{2009}{CesariniBook}
+Cesarini, Francesco – Thomson, Simon (2009): \emph{Erlang programming}. USA: O'Reilly Media.
+
+\harvarditem[Logan et al.]{}{2011}{OTPInAction}
+Logan, Martin – Merritt, Eric – Carlsson, Richard (2011): \emph{Erlang and OTP in Action}. USA:
+Manning Publications.
+
+\harvarditem[Fielding]{}{2001}{Fielding}
+Fielding, Roy Thomas (2001): \emph{Architectural Styles and the Design of Network-based Software
+Architectures}. PhD. thesis, University of California, Irvine. Web:
+\url{http://www.ics.uci.edu/~fielding/pubs/dissertation/fielding_dissertation.pdf}, letöltés dátuma: 2012-04-
+01.
+
+\harvarditem[Erlang documentáció]{}{2012}{ErlangDoc}
+Erlang documentation... (2011) Web: \url{http://www.erlang.org}
+
+\harvarditem[Akamai felmérés]{}{2006}{AkamaiReport} 
+Akamai felmérés (2006): \emph{Retail web site performance: Consumer Reaction to a Poor Online
+Shopping Experience}
+\url{http://www.akamai.com/dl/reports/Site_Abandonment_Final_Report.pdf}
+
+\end{thebibliography}
+
+\clearpage
+\addcontentsline{toc}{chapter}{Tárgymutató}
+\printindex
+
+\end{document}
