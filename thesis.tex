@@ -144,14 +144,132 @@ adatbáziskezelőt, stb.
 
 \newpage
 
-\chapter{Elméleti alapok}
-\section{Funkcionális programozás}
-\section{Aktor modell}
-\section{Az Erlang programozási nyelv}
-\section{Open Telecom Platform}
-Behaviours. Supervisor hierarchies.
-\section{Egy gép nem gép: elosztott rendszerek}
-Erlang nodes. CAP theorem.
+\chapter{Elméleti alapok} 
+
+Az Erlang nyelvet rendkívül magas rendelkezésre állású, elosztott rendszerek
+készítéséhez hozták létre. Nem akadémiai környezetben született, a legfőbb cél
+az volt, hogy profitot termeljenek a segítségével: a szoftverek hamarabb
+készüljenek el; a megrendelő azt kapja, amit szeretett volna; a termékek
+karbantarthatóak legyenek; redundáns, elosztott környezetben működjenek
+(folyamatosan); kapacitásuk növelhető legyen. A vezérelv az volt, hogy ,,minden
+szoftver hibás'', mindig előfordul olyan hiba, amelyet nem kellő
+körültekintéssel, nem megfelelő specifikáció birtokában megírt szoftver okoz.
+Nem lehet úgy tenni, mintha egy szoftver valaha is ,,készen'' lenne, és utána már
+nem kellene javítani, új igényeknek megfelelően bővíteni (újabb hibákat
+elkövetni). Azt is figyelembe kellett venni, hogy a magas
+rendelkezésre állás megkövetelte redundáns architektúra párhuzamos programozást
+igényel, nem egy processzoron kell futni, hanem többön, sőt több gépen. Az
+Erlang egyik megalkotója, Joe Armstrong, az itt leírt elvekre, módszerekre a
+\emph{concurrency-oriented programming} kifejezést használta.
+
+Az Erlang lényegében egy magas szintű nyelv konkurens rendszerek
+fejlesztéséhez. A párhuzamos programozás komplex feladatok esetében sokkal
+képzettebb, tapasztaltabb (így drágább) fejlesztőket kíván meg, egyáltalán nem
+kicsi a lépés a nem párhuzamos pogramozástól (\emph{sequential programming}).
+Egyszerűen fogalmazva: egynél több cselekvő dolgozik egyazon rendszeren belül,
+ezért az egyes állapotváltoztatásoknál gondoskodni kell arról, hogy a több
+helyről kezdeményezett műveletek után a rendszer allapota konzisztens maradjon.
+
+A Java nyelvben például a párhuzamos programozást a \emph{thread}-ek teszik
+lehetővé, a konzisztens állapot megőrzését pedig a \emph{synchronized}
+kulcsszóval jelölt metódusokkal, programblokkokkal lehet elérni. Az Erlanggal
+más utat választottak, két alapra építettek: a \emph{funkcionális
+programozásra} és az \emph{aktor modellre}.
+ 
+\section{Funkcionális programozás} 
+
+Az Erlang funkcionális programozási nyelv. Az imperatív nyelvekkel szemben,
+ahol egy implicit állapot (\emph{state}) változik adott nyelvi konstrukciók
+eredményeképp, a tisztán funkcionális nyelvekben nincs implicit állapot, a
+függvények mellékhatás-mentesek (\emph{side effect free}). Minden függvényhívás
+tartalmaz minden szükséges argumentumot, ami az eredményhez szükséges (akár
+explicit állapotot is, ha szükséges), és az azonos paraméterekkel rendelkező
+függvényhívások mindig ugyanazt az eredményt adják. Egyszerű matematikai
+példával élve: az f(x) = x + 1 függvény azonos x értékekre mindig azonos
+eredményt ad.
+
+Az széles körben elterjedt imperatív nyelvekben (Java, Perl, C, stb) az állapot
+változtatására szolgáló, a vezérlést végző nyelvi elemek egymásutáni
+használatával lehet leírni a működés ,,hogyanját''. Változók értékadása,
+feltételes elágazások, ciklusok adják a működés logikáját, mit mi után milyen
+feltételek teljesülése esetén kell végrehajtani. Például a Fibonacci-sor Java
+megvalósítása:
+
+{\footnotesize
+\begin{lstlisting}[emphstyle=\textbf, caption=Fibonacci-sor, language=java, frame=single]
+int a=0, b=1;
+public static int fib(int n) {
+  for(int i=0; i<n; i++) {
+    int c = a;
+    a = b;
+    b = c + b;
+  }
+  return a;
+}
+\end{lstlisting}
+}
+
+A fenti egyszerű példában szerepel értékadás, feltétel vizsgálat és ciklus is.
+A végrehajtás során az 'a' változó többször kap új értéket, a ciklus futásának
+végén tartalmazza az eredményt.
+
+Az Erlang deklaratív nyelv, a ,,hogyan'' helyett a ,,mit'' írja le:
+kifejezéseket ad meg, mintaillesztésekkel. Funkcionális nyelveknél a függvény
+alapvető nyelvi elem, amelynek segítségével a működés leírható. A Fibonacci
+példa Erlang változata:
+
+{\footnotesize
+\begin{lstlisting}[emphstyle=\textbf, caption=Fibonacci-sor, language=erlang, frame=single]
+fib(0) -> 0;
+fib(1) -> 1;
+fib(N) when N > 0 -> fib(N-1) + fib(N-2).
+\end{lstlisting}
+}
+
+Ebben az esetben a fib függvény deklarációja háromféle esetet ír le
+(\emph{function clause}), melyik argumentum esetén mit kell tenni. Az imperatív
+nyelvekben megszokott struktúrák helyett más megoldásokkal kell élni. Ciklus
+helyett rekurzív függvényhívásokkal, feltételes elágazás helyett a függvény
+deklarációba írt kifejezéssel.
+
+A funkcionális pogramnyelvek fontos ismérve az is, hogy a fügvények teljes jogú
+elemei a nyelvnek (\emph{higher order functions}). Bárhol, ahol valamilyen érték
+szerepelhet, függvény is. Függvények paramétereként, listák, rekordok
+elemeként. Függvény visszatérési értéke is lehet függvény. Például egy lista
+elemeit többféle szempont szeretnénk szűrni. Előszrör a páros számokat, majd
+utána a páratlanokat:
+
+{\footnotesize
+\begin{lstlisting}[emphstyle=\textbf, caption=Fibonacci-sor, language=erlang, frame=single]
+Paros = fun(N) when N rem 2 == 0 -> true;
+           (_)                   -> false.
+
+Paratlan = fun(N) when N rem 2 == 1 -> true;
+              (_)                   -> false.
+
+
+Lista = [1, 2, 3, 4, 5, 6, 7, 8, 9].
+ParosSzamok = lists:filter(Paros, Lista).
+ParatlanSzamok = lists:filter(Paratlan, Lista).
+
+\end{lstlisting}
+}
+
+A lists:filter függvény a megadott lista minden elemére lefuttatja a Paros vagy
+a Paratlan függvényt, és ha igaz értéket kap vissza, akkor bennehagyja a
+listában a vizsgált elemet. A Paros illetve Paratlan függvények változók (amik
+nem igazi változók, csak egyszer kaphatnak értéket), amelyek értéke egy-egy
+névtelen függvény.
+
+higher order fix, first class functions
+miért nem tisztán funkcionális
+
+
+
+\section{Aktor modell} 
+\section{Az Erlang programozási nyelv} 
+\section{Open Telecom Platform} Behaviours. Supervisor hierarchies.  
+\section{Egy gép nem gép: elosztott rendszerek} Erlang nodes. CAP theorem.
 
 \chapter{Soft realtime messaging -- a simple demo}
 
