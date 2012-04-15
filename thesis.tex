@@ -14,8 +14,12 @@
 \makeindex
 
 \newenvironment{abstract}
-{\newpage \pagestyle{empty} \vspace*{\fill} \begin{center}\em{Absztrakt}\end{center}}
+{\newpage \pagestyle{empty} \vspace*{\fill} \begin{center}\em{Kivonat}\end{center}}
 {\vspace*{\fill} \newpage}
+
+\lstnewenvironment{code}[2]
+{\lstset{basicstyle=\footnotesize, showstringspaces=false, emphstyle=\textbf, caption= #2,language= #1, frame=single}}
+{}
 
 \pagestyle{fancy}
 \renewcommand{\chaptermark}[1]{%
@@ -184,19 +188,18 @@ eredményeképp, a tisztán funkcionális nyelvekben nincs implicit állapot, a
 függvények mellékhatás-mentesek (\emph{side effect free}). Minden függvényhívás
 tartalmaz minden szükséges argumentumot, ami az eredményhez szükséges (akár
 explicit állapotot is, ha szükséges), és az azonos paraméterekkel rendelkező
-függvényhívások mindig ugyanazt az eredményt adják. Egyszerű matematikai
-példával élve: az f(x) = x + 1 függvény azonos x értékekre mindig azonos
-eredményt ad.
+függvényhívások mindig ugyanazt az eredményt adják (\emph{referential
+transparency}). Egyszerű matematikai példával élve: az \texttt{f(x) = x + 1}
+függvény azonos x értékekre mindig azonos eredményt ad.
 
-Az széles körben elterjedt imperatív nyelvekben (Java, Perl, C, stb) az állapot
+A széles körben elterjedt imperatív nyelvekben (Java, Perl, C, stb) az állapot
 változtatására szolgáló, a vezérlést végző nyelvi elemek egymásutáni
 használatával lehet leírni a működés ,,hogyanját''. Változók értékadása,
 feltételes elágazások, ciklusok adják a működés logikáját, mit mi után milyen
 feltételek teljesülése esetén kell végrehajtani. Például a Fibonacci-sor Java
 megvalósítása:
 
-{\footnotesize
-\begin{lstlisting}[emphstyle=\textbf, caption=Fibonacci-sor, language=java, frame=single]
+\begin{code}{java}{Fibonacci -- Java}
 int a=0, b=1;
 public static int fib(int n) {
   for(int i=0; i<n; i++) {
@@ -206,41 +209,38 @@ public static int fib(int n) {
   }
   return a;
 }
-\end{lstlisting}
-}
+\end{code}
 
 A fenti egyszerű példában szerepel értékadás, feltétel vizsgálat és ciklus is.
 A végrehajtás során az 'a' változó többször kap új értéket, a ciklus futásának
 végén tartalmazza az eredményt.
 
-Az Erlang deklaratív nyelv, a ,,hogyan'' helyett a ,,mit'' írja le:
-kifejezéseket ad meg, mintaillesztésekkel. Funkcionális nyelveknél a függvény
-alapvető nyelvi elem, amelynek segítségével a működés leírható. A Fibonacci
-példa Erlang változata:
+Az Erlang deklaratív nyelv, a ,,hogyan'' helyett a ,,mit'' írja le: a fejlesztő
+kifejezéseket ad meg, mintaillesztésekkel -- kijelentéseket tesz. Funkcionális
+nyelveknél a függvény alapvető nyelvi elem, amelynek segítségével a működés
+leírható. A Fibonacci példa Erlang változata:
 
-{\footnotesize
-\begin{lstlisting}[emphstyle=\textbf, caption=Fibonacci-sor, language=erlang, frame=single]
-fib(0) -> 0;
-fib(1) -> 1;
-fib(N) when N > 0 -> fib(N-1) + fib(N-2).
-\end{lstlisting}
-}
+\begin{code}{erlang}{Fibonacci -- Erlang}
+fib(0) -> 0; 
+fib(1) -> 1; 
+fib(N) when N > 0 -> fib(N-1) + fib(N-2).  
+\end{code} 
 
-Ebben az esetben a fib függvény deklarációja háromféle esetet ír le
+Ebben az esetben a fib függvény deklarációja három állítás
 (\emph{function clause}), melyik argumentum esetén mit kell tenni. Az imperatív
 nyelvekben megszokott struktúrák helyett más megoldásokkal kell élni. Ciklus
 helyett rekurzív függvényhívásokkal, feltételes elágazás helyett a függvény
-deklarációba írt kifejezéssel.
+deklarációba írt kifejezéssel (jelen esetben pozitív számokra értelmezett a
+függvény).
 
 A funkcionális pogramnyelvek fontos ismérve az is, hogy a fügvények teljes jogú
-elemei a nyelvnek (\emph{higher order functions}). Bárhol, ahol valamilyen érték
-szerepelhet, függvény is. Függvények paramétereként, listák, rekordok
-elemeként. Függvény visszatérési értéke is lehet függvény. Például egy lista
-elemeit többféle szempont szeretnénk szűrni. Előszrör a páros számokat, majd
-utána a páratlanokat:
+elemei a nyelvnek (\emph{first class functions}). Bárhol, ahol valamilyen érték
+szerepelhet, függvény is: listák, rekordok, adatszerkezetek elemeként. Függvény
+argumentuma illetve visszatérési értéke is lehet függvény (\emph{higher order
+functions}). Például egy lista elemeit többféle szempont szeretnénk szűrni.
+Először a páros számokat, majd utána a páratlanokat:
 
-{\footnotesize
-\begin{lstlisting}[emphstyle=\textbf, caption=Fibonacci-sor, language=erlang, frame=single]
+\begin{code}{erlang}{}
 Paros = fun(N) when N rem 2 == 0 -> true;
            (_)                   -> false.
 
@@ -251,22 +251,43 @@ Paratlan = fun(N) when N rem 2 == 1 -> true;
 Lista = [1, 2, 3, 4, 5, 6, 7, 8, 9].
 ParosSzamok = lists:filter(Paros, Lista).
 ParatlanSzamok = lists:filter(Paratlan, Lista).
+\end{code}
 
-\end{lstlisting}
-}
+A \texttt{lists:filter} függvény a megadott lista minden elemére lefuttatja a
+\texttt{Paros} vagy a \texttt{Paratlan} függvényt, és ha igaz értéket kap
+vissza, akkor bennehagyja a listában a vizsgált elemet. A \texttt{Paros}
+illetve \texttt{Paratlan} függvények változók (amik nem igazi változók, csak
+egyszer kaphatnak értéket), amelyek értéke egy-egy névtelen függvény
+(\emph{$\lambda$ function}).
 
-A lists:filter függvény a megadott lista minden elemére lefuttatja a Paros vagy
-a Paratlan függvényt, és ha igaz értéket kap vissza, akkor bennehagyja a
-listában a vizsgált elemet. A Paros illetve Paratlan függvények változók (amik
-nem igazi változók, csak egyszer kaphatnak értéket), amelyek értéke egy-egy
-névtelen függvény.
+Az Erlang nem tisztán funkcionális környezet -- lévén ipari alkalmazásra
+készült -- lehet írni olyan függvényeket, amelyek nem mellékhatás mentesek,
+például fájl- és adatbázis műveletek. A funkcionális programozás alapelvei
+azonban jelen vannak, lehet tisztán funkcionális alkalmazást is írni, és a
+fentebb ismertetett elvek maradéktalanul alkalmazhatók. Nem léteznek globális
+változók, amelyek értékét több függvényből is módosítani lehetne, minden
+változó (pontosabban értékadás egy névhez) csak az adott függvényen belül
+értelmezett, a szükséges állapotot a függvény argumentumai közt explicit kell
+megadni, és a visszatérési értékbe is betenni. A párhuzamos programozást ez
+nagyban megkönnyíti: nem kell attól félni, hogy egy értéket egy másik folyamat
+vagy függvényhívás felülír, mindig minden ,,kézben van''. Hogyan lehet így
+bármi használhatót írni? Hogyan lehet egy komplex rendszert felépíteni,
+amelynek egyes moduljai inputokar várnak más moduloktól?
 
-higher order fix, first class functions
-miért nem tisztán funkcionális
+Az egyes folyamatok (\emph{process}) üzeneteket küldenek egymásnak, amelyek
+egy-egy másolatát (nem csak egy referenciát!) kapja meg a címzett fél, az
+üzenetváltás után a küldő és a fogadó fél is birtokában van az adatnak, nincs
+megosztott állapot (\emph{shared state}), még véletlenül sem fordulhat elő,
+hogy egyik folyamat módosít valamit, amire egy másik folyamat is épít (kivéve,
+ha \emph{side-effect}-eket használ a program -- például adatbázist).
 
-
+Az Erlang architektúra alapja a fentebb leírt üzenet alapú modell: az aktor
+modell.
 
 \section{Aktor modell} 
+
+
+
 \section{Az Erlang programozási nyelv} 
 \section{Open Telecom Platform} Behaviours. Supervisor hierarchies.  
 \section{Egy gép nem gép: elosztott rendszerek} Erlang nodes. CAP theorem.
