@@ -295,22 +295,25 @@ képességgel. Az egyes aktorok közötti kommunikációs csatorna biztosítja a
 viselkedési minta szerint, egymással üzenetet váltanak, észlelik a másik
 cselekvő halálát, diszfunkcionalitását. A világ konkurens, az aktorok egymással
 egy időben működnek, kommunikálnak, megfelelő protokoll szerint megértik
-egymás üzeneteit. 
+egymás üzeneteit, esetleg -- megállapodás alapján -- figyelnek egymásra. Ha
+egyikkel történik valami, a másik észreveszi, és ha tud, csinál valami
+hasznosat.
 
 Például egy telefonbeszélgetés során két aktor üzeneteket vált egymással
 (hangcsatornán keresztül):
 
--- Jó napot! Béla vagyok.
--- Jó napot! Mondja a számot.
--- 42.
+\begin{quote}
+-- Jó napot! Béla vagyok.\\
+-- Jó napot! Mondja a számot.\\
+-- 42.\\
 -- Köszönöm.
-
-Vagy:
-
--- Jó napot! Az adóhivataltól vagyok.
--- Sajnálom, téves.
-
-Ehhez hasonlóan a számítógépes aktorok (Erlangban: \emph{process}) is képesek:
+\end{quote}
+\par\noindent Vagy:
+\begin{quote}
+-- Jó napot! Az adóhivataltól vagyok.\\
+-- Sajnálom, ez biztos téves.
+\end{quote}
+\noindent Ehhez hasonlóan a számítógépes aktorok (Erlangban: \emph{process}) is képesek:
 \begin{itemize}
   \item üzeneteket küldeni;
   \item üzeneteket fogadni;
@@ -332,16 +335,37 @@ módon tudnak kommunikálni. A processzek azonosítóval rendelkeznek, ez a cím
 ahova küldeni lehet az üzenetet, és -- ami nagyon fontos a redundáns rendszerek
 építésénél -- az üzenetküldés két külön gépen lévő process között teljesen
 transzparens, a programozónak nem kell külön erőfeszítést tennie, ha másik
-gépen lévő process-el akar kommunikálni. A szintaxis ugyanaz helyben mint gépek
+gépen lévő process-szel akar kommunikálni. A szintaxis ugyanaz helyben mint gépek
 között.
 
-Az Erlang tehát egy aszinkron üzenetküldésre épülő platform, ahol minden aktor
-birtokában van a működéséhez szükséges összes inormációnak,  
+A párhuzamos programozás lehetőségét ez az aktor modell nyújtja az Erlang
+platformon. Nincs közös állapot (\emph{shared state}), az egyes folyamatok
+aszinkron üzenetküldéssel kommunikálnak egymással, az üzenetek másolata kerül a
+címzett birtokába, a feladó ,,eredeti példánya'' megmarad. A valós életben sem
+törlődik az agyunkból semmi, csak mert elmondjuk másnak (kivéve esetleg az
+egyetemi vizsgákat). Ez a másolás teszi lehetővé a gépek közti transzparens
+kommunikációt.
+
+\section{Elosztott (\emph{distributed}) Erlang}
+Egy gép nem gép, ha magas rendelkezésre állást kell biztosítani. Hiába van
+remekül megírva a szoftver, ha a hardver meghibásodik alatta vagy kimegy az
+áram. Egy gép nem gép akkor sem, ha a feladat olyan időigényes, vagy olyan nagy
+adatigénye van, hogy egyetlen mai számítógép sem elegendő hozzá önmagában. A
+feladatot ilyenkor partícionálni kell, és az egyes részfeladatokat egymással
+párhuzamosan kell elvégezni. Több gépre kell szoftvert írni, és ez az Erlang
+erőssége. A fentebb röviden ismertetett funkcionális programozás elve, és az
+aktor modell egyszerűbbé, átláthatóbbá teszi a programok szerkezetét, magas
+szintű nyelven lehet rendszert fejleszteni, az egyes Erlang egységek
+(\emph{node}) közti kommunikáció mikéntjéről mit sem kell tudni (az OSI
+hálózati hierarchia applikációs szintjén biztosított protokoll, és a nyelvbe
+épített egyszerű üzenetküldési, fogadási szintaxis biztosítja a teljes
+transzparenciát a programozó számára).
+
 
 
 \section{Az Erlang programozási nyelv} 
-\section{Open Telecom Platform} Behaviours. Supervisor hierarchies.  
-\section{Egy gép nem gép: elosztott rendszerek} Erlang nodes. CAP theorem.
+\section{Open Telecom Platform} 
+Behaviours. Supervisor hierarchies.  
 
 \chapter{Soft realtime messaging -- a simple demo}
 
