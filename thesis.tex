@@ -10,15 +10,19 @@
 \usepackage{makeidx}
 \usepackage{natbib}
 \usepackage{url}
-
+\usepackage{color}
+\usepackage[usenames,dvipsnames]{xcolor}
 \makeindex
 
 \newenvironment{abstract}
 {\newpage \pagestyle{empty} \vspace*{\fill} \begin{center}\em{Kivonat}\end{center}}
 {\vspace*{\fill} \newpage}
 
+\definecolor{light-gray}{gray}{0.6}
 \lstnewenvironment{code}[2]
-{\lstset{basicstyle=\footnotesize, showstringspaces=false, emphstyle=\textbf, caption= #2,language= #1, frame=single}}
+{\lstset{basicstyle=\footnotesize, showstringspaces=false, emphstyle=\textbf,
+caption= #2,language= #1, frame=single, xleftmargin=1.5cm, xrightmargin=1.5cm,
+rulecolor=\color{light-gray}, belowskip=0.75cm, aboveskip=0.5cm}}
 {}
 
 \pagestyle{fancy}
@@ -313,7 +317,9 @@ Például egy telefonbeszélgetés során két aktor üzeneteket vált egymássa
 -- Jó napot! Az adóhivataltól vagyok.\\
 -- Sajnálom, ez biztos téves.
 \end{quote}
-\noindent Ehhez hasonlóan a számítógépes aktorok (Erlangban: \emph{process}) is képesek:
+\noindent A fenti kis párbeszédekben a résztvevők értelmezni tudják a bejövő
+üzenetet, és annak megfelelően adnak választ. Ugyanígy a számítógépes 
+aktorok (Erlangban: \emph{process}) is képesek:
 \begin{itemize}
   \item üzeneteket küldeni;
   \item üzeneteket fogadni;
@@ -355,13 +361,107 @@ feladatot ilyenkor partícionálni kell, és az egyes részfeladatokat egymássa
 párhuzamosan kell elvégezni. Több gépre kell szoftvert írni, és ez az Erlang
 erőssége. A fentebb röviden ismertetett funkcionális programozás elve, és az
 aktor modell egyszerűbbé, átláthatóbbá teszi a programok szerkezetét, magas
-szintű nyelven lehet rendszert fejleszteni, az egyes Erlang egységek
+szintű nyelven lehet elosztott rendszert fejleszteni, az egyes Erlang egységek
 (\emph{node}) közti kommunikáció mikéntjéről mit sem kell tudni (az OSI
 hálózati hierarchia applikációs szintjén biztosított protokoll, és a nyelvbe
 épített egyszerű üzenetküldési, fogadási szintaxis biztosítja a teljes
 transzparenciát a programozó számára).
 
+Az Erlang hálózat alapegysége a \emph{node}. A node egy teljesen önálló Erlang
+rendszer, saját névvel, virtuális géppel (\emph{virtual machine, VM}), külön
+operációs rendszer folyamatban. Egy gépen egy vagy több node is futtatható,
+egymáshoz való viszonyuk nem különbözik attól, mintha külön gépen futnának.
+Ahhoz, hogy a node-ok egy Erlang hálózatot alkossanak, egy közös
+\emph{cookie}-val kell rendelkezniük, az Erlang VM-et ezt az értéket megadva
+kell elindítani. Az Erlang hálózatban minden node tud minden node-ról,
+közvetlen kapcsolatban vannak egymással. Ez a hálózati felépítés korlátozza a
+node-ok számát egy hálózaton belül, bizonyos szám felett már túl nagy terhelést
+jelent a node-ok egymás közti adminisztrációs kommunikációja. Szerencsére node-ot lehet
+rejtett üzemmódban is indítani, így nem jelenik meg a többi node listáján.
 
+Erlang hálózatok belső, biztonságos környezetben használatosak, a klaszteren
+(\emph{cluster}) kívüli világgal, az interneten keresztül, valamelyik IP alapú
+protokollal -- TCP, UDP, SCTP -- lehet kommunikálni. Egy webszolgáltatás
+esetében például a belső hálózat Erlang node-okból áll, a külvilág -- a
+böngésző -- pedig HTTP protokollon keresztül éri el a HTTP szervert futtató
+gépet. 
+
+Elosztott rendszereknél bizonyos méret fölött, különösen földrajzilag is
+diverzifikált rendszereknél a CAP-elméletnek megfelelően a következő háromból
+valamelyiket fel kell adni:
+\begin{description}
+\item[\emph{Consistency}] \hfill \\
+ A rendszer által tárolt adatok mindig, minden pillanatban konzisztensek, a
+referenciák érvényesek és minden felhasználó ugyanazt látja. Ha egy darab könyv
+van raktáron, és azt valaki megveszi, akkor egy másik vásárló ugyanezt a
+könyvet már nem tudja megvenni, azt fogja látni, hogy elfogyott.
+
+\item[\emph{Availability}] \hfill \\
+  A kliens mindig kap választ, a rendszer mindig elérhető. A válasz lehet
+sikeres vagy sikertelen végrehajtás eredménye is, a lényeg, hogy a kérést
+intéző fél mindig kap információt az eredményről.
+
+\item[\emph{Partition Tolerance}] \hfill \\
+ Csak a teljes rendszer hibás működése esetén fordulhat elő, hogy a kliens
+rossz választ kapjon, vagy egyáltalán ne kapjon választ.
+\end{description}
+
+\noindent A fenti korlátozás a rendszer növekedésével párhuzamosan válik
+szembetűnővé. Amíg egy gép van (sok-sok redundáns diszkkel), addig minden
+konzisztens, viszont a legegyszerűbb hardver hiba is elég, hogy ne legyen
+elérhető. Nő a forgalom, a működtető nem akar kiesést, egyre több gépet állít
+csatasorba, az adatok nem férnek már el semmilyen számítógépen, elosztott
+architektúrára van szükség. Ha az is meg van, akkor felmerül, hogy ha tűz üt ki
+az épületben, akkor nem lesz elérhető semmi. Földrajzilag is el kell különíteni
+az egyes részeket: ekkor az a probléma, hogy meg kell oldani a konzisztens
+adatmódosítást úgy, hogy közben az elérhetőség (elfogadható válaszidő) ne
+sérüljön. A CAP-elmélet ezt állítja, valamelyik feltétel a háromból
+mindenképpen sérül.
+
+Az ebben a dolgozatban a .. fejezetben bemutatott alkalmazás esetében az
+elérhetőségről (\emph{availability}) mondunk le. A rendszer egy Erlang
+node-okból álló klasztert alkot egy biztonságos helyi hálózaton belül,
+földrajzilag nincs elkülönítve egyetlen része sem (ez az irány -- nevezetesen a
+konzisztencia feladása -- egy későbbi dolgozat tárgya lehet). A rendszer
+állapota mindig konzisztens, és a rendszer mindaddig válaszképes, amíg akár
+egyetlen node is üzemel.
+
+A dolgozat célja nem egy Google vagy Amazon-méretű cég technológiai hátterének
+elemzése, hanem az Erlang/OTP platform bemutatása, ezért ezt a feltételt dobjuk
+el. Egy így felépíthető rendszer kapacitása, képességei is messze meghaladják
+egy átlagos magyar vállalkozás vagy akár egyetemi tanulmányi rendszer
+követelményeit. Biztosítani képes a folyamatos működést, és az elfogadható
+válaszidőt (\emph{soft-realtime}).
+
+\newpage
+\noindent Üzenet küldése a \texttt{P} process-nek (ahol P értéke a process azonosítója):
+
+\begin{code}{erlang}{}
+P ! "Hello"
+\end{code}
+
+\noindent Üzenet küldése egy másik gépen futó process-nek:
+
+\begin{code}{erlang}{}
+P ! "Hello"
+\end{code}
+
+\noindent Semmi különbség. A programban nem kell külön figyelni arra, 
+hogy hol van a címzett, sem arra, hogy honnan jött az üzenet. Az alábbi
+kódrészlet mindkét esetben fogadja az üzenetet:
+
+\begin{code}{erlang}{}
+receive
+  Message ->
+      ...
+end
+\end{code}
+
+A \texttt{receive} utasítás addig vár, amíg üzenet nem érkezik, majd a Message
+névhez rendeli a tartalmát. Jelen esetben a \texttt{Hello} szöveget. Az utasítás
+több mintát is tartalmazhat. A fenti példában bármilyen üzenet is érkezik, azt
+a Message-hez rendeli.
+Protokoll kialakítása.
 
 \section{Az Erlang programozási nyelv} 
 \section{Open Telecom Platform} 
