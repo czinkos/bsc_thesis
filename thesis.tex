@@ -192,7 +192,7 @@ függvényhívások mindig ugyanazt az eredményt adják (\emph{referential
 transparency}). Egyszerű matematikai példával élve: az \texttt{f(x) = x + 1}
 függvény azonos x értékekre mindig azonos eredményt ad.
 
-A széles körben elterjedt imperatív nyelvekben (Java, Perl, C, stb) az állapot
+A széles körben elterjedt imperatív nyelvekben (Java, C) az állapot
 változtatására szolgáló, a vezérlést végző nyelvi elemek egymásutáni
 használatával lehet leírni a működés ,,hogyanját''. Változók értékadása,
 feltételes elágazások, ciklusok adják a működés logikáját, mit mi után milyen
@@ -286,6 +286,57 @@ modell.
 
 \section{Aktor modell} 
 
+Az aktor modell létrehozását több száz, több ezer mikroprocesszorból álló
+rendszerek készítése motiválta. 1973-ban írta le először Carl Hewitt. Az aktor
+modell alapeleme az \emph{aktor}, azaz a cselekvő, amely önálló entitás, saját
+memóriával, viselkedési mintával (\emph{behaviour}), üzenetküldési és fogadási
+képességgel. Az egyes aktorok közötti kommunikációs csatorna biztosítja az
+összeköttetést. Akárcsak a valós világban: a cselekvők cselekszenek valamilyen
+viselkedési minta szerint, egymással üzenetet váltanak, észlelik a másik
+cselekvő halálát, diszfunkcionalitását. A világ konkurens, az aktorok egymással
+egy időben működnek, kommunikálnak, megfelelő protokoll szerint megértik
+egymás üzeneteit. 
+
+Például egy telefonbeszélgetés során két aktor üzeneteket vált egymással
+(hangcsatornán keresztül):
+
+-- Jó napot! Béla vagyok.
+-- Jó napot! Mondja a számot.
+-- 42.
+-- Köszönöm.
+
+Vagy:
+
+-- Jó napot! Az adóhivataltól vagyok.
+-- Sajnálom, téves.
+
+Ehhez hasonlóan a számítógépes aktorok (Erlangban: \emph{process}) is képesek:
+\begin{itemize}
+  \item üzeneteket küldeni;
+  \item üzeneteket fogadni;
+  \item a beérkező üzeneteket minta alapján szűrni, és azokra adekvát választ
+adni;
+  \item meghatározni azt a viselkedés mintát, amellyel a beérkező üzeneteket
+kezelni fogja;
+  \item további aktorokat létrehozni;
+  \item észlelni a megfigyelt aktorok leállását. 
+\end{itemize}
+
+A kommunikáció nagyon fontos eleme az aktor modellnek, az üzenetküldés
+elkülöníti a kommunikáció megoldását az aktortól, lehetővé téve az aszinkron
+üzenetküldést (\emph{asynchron message passing}). Az Erlang architektúra ezen a
+modellen alapszik, nagyon gyorsan és hatékonyan lehet \emph{process}-eket
+nagyon nagy számban indítani és futtatni; minden \emph{process} saját
+memóriával, levelesládával (\emph{mailbox}) rendelkezik, egymással aszinkron
+módon tudnak kommunikálni. A processzek azonosítóval rendelkeznek, ez a cím,
+ahova küldeni lehet az üzenetet, és -- ami nagyon fontos a redundáns rendszerek
+építésénél -- az üzenetküldés két külön gépen lévő process között teljesen
+transzparens, a programozónak nem kell külön erőfeszítést tennie, ha másik
+gépen lévő process-el akar kommunikálni. A szintaxis ugyanaz helyben mint gépek
+között.
+
+Az Erlang tehát egy aszinkron üzenetküldésre épülő platform, ahol minden aktor
+birtokában van a működéséhez szükséges összes inormációnak,  
 
 
 \section{Az Erlang programozási nyelv} 
