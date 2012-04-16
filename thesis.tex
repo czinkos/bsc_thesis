@@ -33,11 +33,9 @@ framexleftmargin=0.5cm, framexrightmargin=0.5cm}}
 
 \fancyhead[L]{}
 
-
 %\renewcommand\lstlistingname{ábra}
 %\renewcommand\lstlistlistingname{Ábrák}
 \lstset{caption=\thelstlisting. \lstlistingname}
-
 
 \author{Czinkos Zsolt}
 \title{Erlang/OTP: magas rendelkezésre állású elosztott rendszerek fejlesztése}
@@ -532,13 +530,116 @@ terulet(S) ->
 "kakukk" kifejezés ekvivalens a \texttt{[107,97,107,117,107,107]} és 
 \texttt{[\$k,\$a,\$k,\$u,\$k,\$k]} listákkal.
 
+\subsection{Mintaillesztés (\emph{pattern matching})}
+A mintaillesztés nagyon fontos fegyver az Erlang arzenálban. Mintaillesztéssel
+lehet egy változónak értéket adni, komplex adatszerkezetből adatot kinyerni,
+a vezérlést irányítani. A mintaillesztés általános formája:
 
+\begin{verbatim}
+    Pattern = Expression
+\end{verbatim}
 
+\noindent A baloldali minta (\emph{pattern}) tartalmazhat bármilyen adattípust,
+változót, a jobboldalon azonban csak olyan változó szerepelhet, amelynek van
+értéke. A kifejezés ezen kívül még tartalmazhat műveletet, függvényhívást is. A
+mintában szereplő, még értékkel nem rendelkező változó a jobboldali kifejezés
+alapján kap értéket. Amennyiben a baloldalon álló változónak már van értéke, a
+mintaillesztés csak akkor lesz sikeres, ha a jobboldali kifejezésben, a
+megfelelő helyen, ugyanaz az érték szerepel.
 
+A mintaillesztésnek két eredménye van: vagy sikeres vagy nem. Néhány példa az
+egyszerű értékadástól, a komplexebb szerkezetig.
 
+\begin{code}{}{}
+1> A = A + 2.
+* 1: variable 'A' is unbound
+2> A = 2.
+2
+3> A = A + 2.
+** exception error: no match of right hand side value 4
+4> B = A + 2.
+4
+5> B.
+4
+6> B = A + A.
+4
+7> B = 2 * A.
+4
+8> C = A + B.
+6
+9> C.
+6
+\end{code}
+
+\noindent Az 1. utasítás nem értelmezhető, mert az \texttt{A} változónak nincs értéke
+(\emph{unbound}), és a jobb oldalon nem szerepelhet így (nincs is értelme). A 3.
+utasításnál az \texttt{A} változónak van értéke (2), de a mintaillesztés nem
+sikeres, mert a bal oldalon így 2 szerepel, a jobb oldalon meg 4.
+
+Listáknál a mintaillesztésnél használható az alábbi szintaxis a lista első
+elemének (\emph{head}) kinyerésére.
+
+\begin{verbatim}
+    [Head|Tail] = [1,2,3,4,5]
+\end{verbatim}
+
+\noindent Ebben az esetben a \texttt{Head} változóban lesz a lista első eleme (1), a
+\texttt{Tail} változóban a többi elem listája (\texttt{[2,3,4,5]}). Néhány
+példa listás mintaillesztésre.
+
+\begin{code}{}{}
+1> List = [1,2,3,4,3,2,1].
+[1,2,3,4,3,2,1]
+2> [Head|Tail] = List.
+[1,2,3,4,3,2,1]
+3> Head.
+1
+4> Tail.
+[2,3,4,3,2,1]
+5> [H1,H2|T] = List.
+[1,2,3,4,3,2,1]
+6> H2.
+2
+7> T.
+[3,4,3,2,1]
+8> A = 3.
+3
+9> [1,2,E,4,E,2,1] = List. 
+[1,2,3,4,3,2,1]
+10> E.
+3
+11> [1,2,F,4,3,F,1] = List.
+** exception error: no match of right hand 
+side value [1,2,3,4,3,2,1]
+\end{code}
+
+\noindent A 9. utasítás sikeres, mert az \texttt{E} változónak nincs értéke, és
+a jobb oldalon lévő lista 3. és 5. eleme megegyezik. A mintaillesztés sikeres,
+és az \texttt{E} változó a 3-as értéket kapja. A 11. utasításnál azért nem
+sikerül az illesztés, mert az \texttt{F} változó két olyan helyen szerepel a
+listában, ahol különböző érték áll a jobboldali kifejezésben.
+
+\noindent Hasonlóképpen a \emph{tuple}-öknél.
+
+\begin{code}{}{}
+
+\end{code}
+
+\subsection{Függvény definiálása}
+guards
+\subsection{Modulok}
+\subsection{Anoním függvények}
+\subsection{Lista műveletek}
+
+\subsection{Konkurens programozás}
 
 
 \newpage
+\section{Open Telecom Platform} 
+Behaviours. Supervisor hierarchies.  
+
+
+
 \noindent Üzenet küldése a \texttt{P} process-nek (ahol P értéke a process azonosítója):
 
 \begin{code}{erlang}{}
@@ -568,8 +669,6 @@ több mintát is tartalmazhat. A fenti példában bármilyen üzenet is érkezik
 a Message-hez rendeli.
 Protokoll kialakítása.
 
-\section{Open Telecom Platform} 
-Behaviours. Supervisor hierarchies.  
 
 \chapter{Soft realtime messaging -- a simple demo}
 
