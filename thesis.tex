@@ -622,14 +622,48 @@ listában, ahol különböző érték áll a jobboldali kifejezésben.
 \noindent Hasonlóképpen a \emph{tuple}-öknél.
 
 \begin{code}{}{}
-
+1> C = {degree, celsius, 37}.
+{degree,celsius,37}
+2> F = {degree, fahrenheit, 99}.
+{degree,fahrenheit,99}
+3> 
+3> {degree, Type, Value} = C.
+{degree,celsius,37}
+4> {Type, Value}.
+{celsius,37}
 \end{code}
+
+\noindent A rekordok valójában tuple-ök, amelyeknek az első eleme a rekord
+neve, így a rekordokat is lehet használni a mintaillesztésekben. A fenti példa
+rekordra átírva.
+
+\begin{code}{erlang}{}
+1> rd(degree, { type, value}).
+degree
+2> T = #degree{ type=celsius, value=37 }.
+#degree{type = celsius,value = 37}
+3> #degree{type=celsius} = T.
+#degree{type = celsius,value = 37}
+4> #degree{type=Type} = T.   
+#degree{type = celsius,value = 37}
+5> Type.
+celsius
+6> {degree, celsius, Value} = T.
+#degree{type = celsius,value = 37}
+7> Value.
+37
+\end{code}
+
+\noindent A rekord szintaxis több mezőnél válik hasznossá, amikor csak egy-egy
+mező értékét szeretnénk kinyerni (és a rekord szintaxisú mintaillesztések akkor
+is működni fognak, ha a mezőszám megváltozik, míg tuple-nél az összes helyen
+módosítani kellene a kódot, ahol mintaillesztésben szerepel). A 6. utasításnál
+látszik, hogy a tuple szintakxisú minta is megfelel a jobboldali rekordnak.
 
 \subsection{Függvény definiálása}
 guards
-\subsection{Modulok}
 \subsection{Anoním függvények}
-\subsection{Lista műveletek}
+\subsection{Modulok}
 
 \subsection{Konkurens programozás}
 
