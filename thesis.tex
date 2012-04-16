@@ -431,8 +431,112 @@ A dolgozat célja nem egy Google vagy Amazon-méretű cég technológiai hátter
 elemzése, hanem az Erlang/OTP platform bemutatása, ezért ezt a feltételt dobjuk
 el. Egy így felépíthető rendszer kapacitása, képességei is messze meghaladják
 egy átlagos magyar vállalkozás vagy akár egyetemi tanulmányi rendszer
-követelményeit. Biztosítani képes a folyamatos működést, és az elfogadható
+követelményeit. Biztosítani képes a folyamatos működést és az elfogadható
 válaszidőt (\emph{soft-realtime}).
+
+\section{Az Erlang programozási nyelv alapjai} 
+Az ebben a részben bemutatásra kerülő Erlang szintaxis nem fedi le a teljes
+nyelvet, a cél, hogy a következőkben bemutatott alkalmazás felépítése, a
+modulok érthetőek legyenek.
+
+Minden Erlang folyamathoz tartozik egy \emph{shell}, amely egy REPL (\emph{Read
+Eval Process Loop} alkalmazás a futó környezethez. Ennek segítségével egy
+egyszerű parancssoros felületen ki lehet próbálni parancsokat, műveleteket, sőt
+-- mint később még látni fogjuk -- ,,éles'' (\emph{production}) környzeteknél
+is hozzáférhetünk a rendszerhez (például hibakeresés céljából).
+
+Az Erlang shell indítása után egy \emph{prompt}-ot ad, a sor eleji szám a
+beírt kifejezések ('.'-tal bezárólag) sorszámát jelenti. Induláskor:
+
+\begin{code}{}{}
+\$ erl -sname a
+Erlang R13B03 (erts-5.7.4) [source] [smp:2:2] ...
+
+Eshell V5.7.4  (abort with ^G)
+(a@notebook)1> 1 + 2 + 3.
+6
+(a@notebook)2>
+\end{code}
+
+\subsection{Típusok} Az Erlang dinamikus típusos nyelv (\emph{dynamic typed
+programming language}).  A statikus típusos nyelvekkel (pl. Java) szemben a
+típusellenőrzés futásidőben (\emph{runtime}) történik nem fordításkor, nem a
+változóknak van típusa, hanem az értékeknek.  Például egy függvény
+argumentumánál nem kell deklarálni, hogy milyen típusú paramétert fog kapni,
+kaphat bármilyet, az futásidőben derül ki, hogy mit kapott, és azt tudja-e
+kezelni. 
+
+Funkcionális nyelv lévén a változó nem igazi változó, csak egyszer kaphat
+értéket, utána nem lehet módosítani. Az egyszerűség kedvéért használjuk az
+angol \emph{variable} szó magyar megfelelőjét. Az Erlangban a változó nevét
+mindig nagy betűvel kell kezdeni.
+
+Egy függvény definíció példa. Egy téglalap területét számolja ki a megadott
+oldalaiból.
+
+\begin{code}{erlang}{}
+terulet(A, B) -> 
+  A * B.
+\end{code}
+
+A függvényen belül sem az \texttt{A} sem a \texttt{B} változóhoz nem lehet új
+értéket rendelni. Amennyiben ciklusra lenne szükségünk, rekurzióval
+kell megoldani.
+
+\subparagraph{Integer} Egész számok: \texttt{100, 3.1415, -5}. Méretét a
+memória mérete határozza meg, nincs felső korlát.
+
+\subparagraph{Float} Lebegőpontos számok az IEEE 754 64-bites ábrázolásnak
+megfelelően.
+
+\subparagraph{Binary} Byte sorozat.
+
+\subparagraph{Atom} Kis betűvel kezdődő alfanumerikus karaktersorozat. Például:
+\texttt{ok, error, true, false}. Nem \emph{string}!
+
+\subparagraph{Fun} Függvény típus. A függvények a többi típushoz hasonlóan
+használhatók változók értékeként. \texttt{fun(N) -> N * N  end.}
+
+\subparagraph{Reference} Egyedi azonosító, amely összehasonlítás céljából
+állítható elő az Erlang \texttt{make\_ref()} függvényével.
+
+\subparagraph{Pid} Process azonosító.
+
+\subparagraph{Port} Az Erlangon kívüli kommunikáció \texttt{port}-okon
+keresztül zajlik. Az Erlang \texttt{open\_port()} függvényével hozható létre
+például C-ben megírt könyvtárak használatához.
+
+\subparagraph{List} Lista. Eleme bármilyen változó lehet.
+\texttt{[1,2,3,4,5,6]}. Az üres lista jelölése: \texttt{[]}.
+
+\subparagraph{Tuple} Több változó egy egységben való kezelésére szolgál. Az
+egyes elemeknek nincs nevük, nem lehet közvetlenül hivatkozni rájuk. Egy
+\emph{tuple} bármilyen más változót tartalmazhat, újabb \emph{tuple}-t is. A
+szintaxis: \texttt{\{teglalap, \{2, 3\}\}}. Ez esetben a tuple eleme egy atom
+és egy tuple, amely két egész számot tartalmaz.
+
+\subparagraph{Record} A rekord szintaktikai egyszerűsítés tuple-ök
+használatához. Egy rekord egy olyan tuple, amelynek az első eleme a rekord
+nevét tartalmazó atom. A rekord mezőinek neve van, amelyekkel lehet hivatkozni
+az egyes elemekre. Futás közben semmiben sem különböznek a tuple-től, a
+programozás megkönnyítésére szolgál. Például:
+
+\begin{code}{erlang}{}
+-record(sikidom, { nev, a\_oldal, b\_oldal}).
+
+terulet(S) ->
+  S#sikidom.a_oldal * S#sikidom.b_oldal.
+\end{code}
+
+\subparagraph{String} Szintaktikai egyszerűsítés egész számok listájához. A
+"kakukk" kifejezés ekvivalens a \texttt{[107,97,107,117,107,107]} és 
+\texttt{[\$k,\$a,\$k,\$u,\$k,\$k]} listákkal.
+
+
+
+
+
+
 
 \newpage
 \noindent Üzenet küldése a \texttt{P} process-nek (ahol P értéke a process azonosítója):
@@ -464,7 +568,6 @@ több mintát is tartalmazhat. A fenti példában bármilyen üzenet is érkezik
 a Message-hez rendeli.
 Protokoll kialakítása.
 
-\section{Az Erlang programozási nyelv} 
 \section{Open Telecom Platform} 
 Behaviours. Supervisor hierarchies.  
 
