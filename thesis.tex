@@ -734,7 +734,7 @@ teljesül, akkor beilleszti a fennmaradó lista elejére az elemet, és nem
 vizsgálódik tovább (3.  \emph{function clause}). Az egyes lépések eredményei
 egy rövid kis listán.
 
-\begin{code}{erlang}{}
+\begin{code}{}{}
 1> list:insert(4, [1, 3, 4, 6]).
 3. function clause [4,4,6]
 2. function clause [3,4,4,6]
@@ -782,12 +782,48 @@ c2f(C) ->
   9 * C / 5 + 32.
 \end{code}
 
-A fenti modul az egy argumentummal rendlkező \texttt{convert} függvényt
+A fenti modul az egy argumentummal rendelkező \texttt{convert} függvényt
 exportálja, csak ezt lehet meghívni más modulokból. A modul neve \texttt{temp},
 kötelező ugyanilyen nevű fájlba tenni.
 
 \subsection{Konkurens programozás}
+A fentebb röviden bemutatott aktor modellen alapul a párhuzamos
+programozás az Erlangban. Az aktorok \emph{process}-ek, amelyek tudnak üzenetet
+fogadni (\emph{receive}), és küldeni (\emph{send}). A process az Erlang VM
+fennhatósága alá tartozik, nem külön operációs rendszer folyamat, indítása nem
+igényel sok erőforrást, egy-egy rendszeren belül akár többszázezer process-t
+is lehet indítani. Például egy HTTP szerver megvalósítása lehet az, hogy minden
+kapcsolathoz tartozik egy önálló webszerver process. Ha ebben valami hiba
+történik (pl. 0-val osztás), akkor ez a process leáll, a többi működik tovább.
 
+Process-ek programozásához az eddigieken bemutatottakon túl mindössze három
+műveletre van szükség:
+
+\subparagraph{Process indítása} Process-t a \texttt{spawn} függvénnyel lehet
+indítani helyben vagy akár egy másik node-on. A process-ek egyedi azonosítót
+kapnak, amely a címük, ide lehet küldeni az üzenetet. Van lehetőség arra is,
+hogy a process nevet kapjon, ezt hosszabb ideig futó processeknél érdemes
+megtenni.
+
+\subparagraph{Üzenet küldése} Üzenetet küldeni a következők szerint lehet:
+\begin{verbatim}
+          P ! "Hello" 
+\end{verbatim} ahol \texttt{P} a process azonosítója vagy regisztrált
+neve, a \texttt{!} a küldés operátor. A jobboldalon álló kifejezés az üzenet,
+amely nem \emph{string} lehet, mint a fenti példában, hanem bármilyen Erlang
+kifejezés (tuple, fun, lista, stb). Másik node-ra ugyanígy lehet üzenetet
+küldeni, nincs különbség.
+
+\subparagraph{Üzenet fogadása} A \texttt{receive} utasítás szolgál az üzenetek
+fogadására. A függvényekhez hasonlóan \emph{clause}-okat tartalmaz, és itt is
+mintaillesztés alapján dől el, melyik ág fog lefutni. Minden process-hez
+tartozik egy \emph{mailbox}, amelyből a receive utasítással lehet kiolvasni az
+üzeneteket. Az utasítás addig olvassa a mailbox-ot, amíg nem talál egy olyan
+üzenetet, amely illeszkedik valamelyik ág mintájára. Ekkor kiolvassa, és az
+üzenet törlődik a mailbox-ból. Ha egyik mintára sem illeszkednek a beérkező
+üzenetek, akkor előbb-utóbb megtelik a memória. Éppen ezért szokás a legtöbb
+esetben az utolsó ág mintáját '\_'-ként megadni. Ez a minta mindenre
+illeszkedik, így végül minden üzenet törlődik a mailbox-ból. 
 
 \newpage
 \section{Open Telecom Platform} 
