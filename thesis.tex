@@ -660,10 +660,131 @@ is működni fognak, ha a mezőszám megváltozik, míg tuple-nél az összes he
 módosítani kellene a kódot, ahol mintaillesztésben szerepel). A 6. utasításnál
 látszik, hogy a tuple szintakxisú minta is megfelel a jobboldali rekordnak.
 
-\subsection{Függvény definiálása}
-guards
-\subsection{Anoním függvények}
-\subsection{Modulok}
+\subsection{Függvény definiálása} A mintaillesztés a függvények definiálásánál
+is nagyon hasznos, a függvény argumentumainak mintát megadva lehet a komplexebb
+paraméterből változóknak értéket adni, illetve külön állításokat
+(\emph{function clause}) megfogalmazni a függvényhez, milyen input esetén mit
+csináljon. Egy névvel, és azonos számú argumentummal (\emph{function arity})
+egy függvényt lehet definiálni, de több állítást lehet tenni azon belül. Egy
+névvel, de eltérő számú argumentummal akármennyi különálló függvényt lehet
+definiálni. Az általános szintaxis jól látszik a következő egyszerű példán:
+
+\begin{code}{erlang}{}
+convert(celsius, T) ->
+  9 * T / 5 + 32;
+convert(fahrenheit, T) ->
+  5 * (T - 32) / 9;
+convert(_,_) ->
+  unkown.
+
+convert() ->
+  nothing.
+
+convert(A) ->
+  A.
+\end{code}
+
+A fenti példa három függvény-definíciót tartalmaz. Az egyik a \texttt{convert}
+függvény két paraméterrel (Erlangban a jelölése: \texttt{convert/2}), paraméter
+nélkül (\texttt{convert/0}) és egy paraméterrel (\texttt{convert/1}). A két
+paraméteres függvény három \emph{function clasue}-ból áll: a kapott paraméter
+alapján mintaillesztéssel dől el, hogy melyik rész fut le. Az '\texttt{\_}' jel
+azt jelenti, hogy ,,bármi'', mindenre illeszkedik. Ha tehát a függvényhívás a
+következő: \texttt{convert(celsius, 36)}, akkor a legelső számítás eredményét
+adja vissza, mert a \texttt{celsius} atom megegyezik a mintával, a \texttt{T}
+változó pedig megkapja értéknek a 36-ot.
+
+Anoním függvények definiálása hasonló módon történik, csak ott a név helyett a
+\texttt{fun} kulcsszó szerepel, az egyes \emph{function clause}-oknál pedig
+csak a zárójelbe írt argumentumlista. Anoním függvényt bárhol definiálhatunk,
+ahol változót is írhatnánk.
+
+\begin{code}{erlang}{}
+Convert = fun(celsius, T) ->
+                  9 * T / 5 + 32;
+             (fahrenheit, T) ->
+                  5 * (T - 32) / 9;
+             (_,_) ->
+                  unkown
+          end.
+\end{code}
+
+Ebben az esetben a \texttt{Convert} változó értéke lesz a függvény, és a következő módon
+lehet meghívni: \texttt{Convert(celsius, 36}). Az anoním függvény definiálása
+az \texttt{end} kulcsszóval zárul.
+
+Végezetül egy példa egy jellemző rekurzív függvény bemutatására. Az alábbi
+\texttt{insert} függvény egy elemet illeszt be egy rendezett listába.
+
+\begin{code}{erlang}{}
+insert(I, []) ->
+  [I];
+insert(I, [H|T]) when I > H ->
+  [H | insert(I, T)];
+insert(I, [H|T]) ->
+  [I, H|T].
+\end{code}
+
+\noindent A \texttt{when} kulcsszó utáni feltétel neve: \emph{guard}. Ezzel
+lehet tovább finomítani a mintában megfogalmazott feltételeket. Jelen esetben
+addig hívja meg újra és újra az insert függvényt (2. \emph{function clause}),
+amíg a beillesztendő elem nagyobb az aktuális listaelemnél (folyamatosan a
+lista elejére téve a megvizsgált listelemet). Amikor ez a feltétel nem
+teljesül, akkor beilleszti a fennmaradó lista elejére az elemet, és nem
+vizsgálódik tovább (3.  \emph{function clause}). Az egyes lépések eredményei
+egy rövid kis listán.
+
+\begin{code}{erlang}{}
+1> list:insert(4, [1, 3, 4, 6]).
+3. function clause [4,4,6]
+2. function clause [3,4,4,6]
+2. function clause [1,3,4,4,6]
+[1,3,4,4,6]
+2> list:insert(7, [1, 3, 4, 6]).
+1. function clause [7]
+2. function clause [6,7]
+2. function clause [4,6,7]
+2. function clause [3,4,6,7]
+2. function clause [1,3,4,6,7]
+[1,3,4,6,7]
+\end{code}
+
+\noindent A \texttt{list:insert} kifejezés jelentése: a \texttt{list} modulban
+lévő \texttt{insert} függvény. 
+
+\subsection{Modulok} A modulok szolgálnak logikailag összetartozó függvények
+csoportosítására. A modulok nem alkotnak hierarchiát (\emph{flat namespace}),
+elnevezéssel lehet megoldani a szükséges tagolást. A modulokban az alábbi
+részek szerepelhetnek:
+
+\begin{itemize}
+\item modul attribútumok, verziószám, szerző, név, interfész függvények;
+\item rekord, makró definíciók, külső fájlok (\emph{header}) beillesztése;
+\item függvények.
+\end{itemize}
+
+\noindent Egy egyszerű modul.
+
+\begin{code}{erlang}{}
+-module(temp).
+-export([convert/1]).
+
+convert({celsius, T}) when is_number(T) ->
+  {fahrenheit, c2f(T)};
+convert({fahrenheit, T}) when is_number(T) ->
+  {celsius, f2c(T)};
+convert(_) ->
+  bad_parameter.
+
+f2c(F) ->
+  5 * (F - 32) / 9.
+c2f(C) ->
+  9 * C / 5 + 32.
+\end{code}
+
+A fenti modul az egy argumentummal rendlkező \texttt{convert} függvényt
+exportálja, csak ezt lehet meghívni más modulokból. A modul neve \texttt{temp},
+kötelező ugyanilyen nevű fájlba tenni.
 
 \subsection{Konkurens programozás}
 
