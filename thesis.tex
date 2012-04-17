@@ -811,11 +811,11 @@ hosszabb ideig futó processeknél érdemes megtenni.
 
 \subparagraph{Üzenet küldése} Üzenetet küldeni a következők szerint lehet:
 \begin{code}{erlang}{}
-          P ! "Hello" 
+          P ! "Hello". 
 \end{code} 
 \noindent ahol \texttt{P} a process azonosítója vagy regisztrált
 neve, a \texttt{!} a küldés operátor. A jobboldalon álló kifejezés az üzenet,
-amely nem \emph{string} lehet, mint a fenti példában, hanem bármilyen Erlang
+amely nem csak \emph{string} lehet, mint a fenti példában, hanem bármilyen Erlang
 kifejezés (tuple, fun, lista, stb). Másik node-ra ugyanígy lehet üzenetet
 küldeni, nincs különbség.
 
@@ -828,6 +828,8 @@ receive
   Pattern2 ->
         ...;
   _ ->
+        ...;
+after Time ->
         ...
 end.
 \end{code}
@@ -840,13 +842,93 @@ tartozik egy \emph{mailbox}, amelyből a receive utasítással lehet kiolvasni a
 üzenet törlődik a mailbox-ból. Ha egyik mintára sem illeszkednek a beérkező
 üzenetek, akkor előbb-utóbb megtelik a memória. Éppen ezért szokás a legtöbb
 esetben az utolsó ág mintáját '\_'-ként megadni. Ez a minta mindenre
-illeszkedik, így végül minden üzenet törlődik a mailbox-ból. 
+illeszkedik, így végül minden üzenet törlődik a mailbox-ból. Az \texttt{after}
+utasítással meg lehet adni, hogy ha \texttt{Time} ideig nem érkezett olyan
+üzenet, ami valamelyik mintára illeszkedett, akkor mit hajtson végre a program
+(\emph{timeout}).
 
-Protokoll kialakítása.
+Az egyes process-ek -- azonkívül, hogy tudnak egymásnak üzeneteket küldeni --
+monitorozni is tudják egymást, nem múlt-e ki a másik. Ennek módja a process-ek
+összekapcsolása a \texttt{link} függvénnyel. 
 
+\begin{code}{erlang}{}
+start() ->
+  process_flag(trap_exit, true),
+  Pid = spawn(module, function, []),
+  link(Pid),
+  receive
+    {'EXIT', Pid, Reason} ->
+      io:format("Process ~p has just died.~n", [Pid])
+  end.
+\end{code}
 
-\newpage
-\section{Open Telecom Platform} 
+A fenti start függvény elindít egy másik process-t, és összekapcsolja a
+jelenlegivel. Amikor a másik process leáll, érkezik egy üzenetet erről, aminek a
+formátumát a fenti \texttt{receive} blokkban szereplő mintán lehet látni. 
+
+Ahhoz, hogy egy process folyamatosan fusson, újra és újra meg kell hívni a
+\texttt{receive} utasítást (hogy várakozzon üzenetre). Az alábbi modul egy
+egy process-t futtat, amíg egy \texttt{stop} atomot nem kap üzenetként. A
+\texttt{?MODULE} makró a modul nevét tartalmazza.
+
+\begin{code}{erlang}{}
+-module(temp).
+-export([start/0, loop/0]).
+
+start() ->
+  spawn(?MODULE, loop, []).
+
+loop() ->
+  receive
+    {From, celsius, T} ->
+        From ! {fahrenheit, c2f(T)},
+        loop();
+    {From, fahrenheit, T} ->
+        From ! {celsius, f2c(T)},
+        loop();
+    stop ->
+      stopped;
+    _ ->
+      loop()
+  end.
+
+f2c(F) ->
+  5 * (F - 32) / 9.
+
+c2f(C) ->
+  9 * C / 5 + 32.
+\end{code}
+
+A puding próbája az evés -- az Erlang shellben. A \texttt{self()} függvény az
+aktuális process azonosítóját adja vissza, jelen esetben az shell-ét; a
+\texttt{flush()} shell-utasítás pedig kilistázza és törli a shell mailbox-át.
+
+\begin{code}{}{}
+1> c(temp).
+{ok,temp}
+2> P = temp:start().
+<0.42.0>
+3> P ! {self(), fahrenheit, 99.9}.
+{<0.35.0>,fahrenheit,99.9}
+4> flush().
+Shell got {celsius,37.72222222222222}
+ok
+5> P ! stop.                      
+stop
+6> flush(). 
+ok
+7> P ! {self(), fahrenheit, 99.9}.
+{<0.35.0>,fahrenheit,99.9}
+8> flush().                       
+ok
+\end{code}
+
+Az ebben a részben bemutatott téglákból építkezik az Erlang részét képező,
+a leggyakoribb feladattípusok megoldására létrehozott Open Telecom Platform 
+(OTP) szoftverkönyvtár, amely központjában a magas rendelkezésre állású,
+párhuzamos rendszerek építése áll.
+
+\section{Open Telecom Platform (OTP)} 
 Behaviours. Supervisor hierarchies.  
 
 
@@ -855,6 +937,7 @@ Behaviours. Supervisor hierarchies.
 \chapter{Soft realtime messaging -- a simple demo}
 
 \chapter{A messaging szerver}
+Protokoll kialakítása ().
 \section{Felépítés}
 \section{Hibatűrés}
 \section{Elosztott rendszer -- kell a redundancia}
@@ -877,28 +960,6 @@ Upgrade.
 \chapter{Összegzés}
 \appendix
 
-{\footnotesize
-
-\begin{lstlisting}[emph={fun}, emphstyle=\textbf, caption=Map reduce module, language=erlang, frame=single]
--module(mapreduce).
-
-start() ->
-  spawn(fun() -> init() end).
-
-init() ->
-  loop().
-
-loop() ->
-  receive
-    {From, To, What} ->
-      io:format("~p sent to ~p a message ~p~n", [From,To,What]),
-      loop();
-    _ -> % avoid full msg box
-      io:format("Nothing. Finish.")
-  end.
-
-\end{lstlisting}
-}
 
 \begin{thebibliography}{9}
 
