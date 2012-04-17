@@ -800,22 +800,39 @@ Process-ek programozásához az eddigieken bemutatottakon túl mindössze három
 műveletre van szükség:
 
 \subparagraph{Process indítása} Process-t a \texttt{spawn} függvénnyel lehet
-indítani helyben vagy akár egy másik node-on. A process-ek egyedi azonosítót
-kapnak, amely a címük, ide lehet küldeni az üzenetet. Van lehetőség arra is,
-hogy a process nevet kapjon, ezt hosszabb ideig futó processeknél érdemes
-megtenni.
+indítani helyben vagy akár egy másik node-on.
+\begin{code}{erlang}{}
+ P = spawn(module, function, [P1, P2 ...]).
+\end{code}
+
+\noindent A process-ek egyedi azonosítót kapnak, amely a címük, ide lehet
+küldeni az üzenetet. Van lehetőség arra is, hogy a process nevet kapjon, ezt
+hosszabb ideig futó processeknél érdemes megtenni.
 
 \subparagraph{Üzenet küldése} Üzenetet küldeni a következők szerint lehet:
-\begin{verbatim}
+\begin{code}{erlang}{}
           P ! "Hello" 
-\end{verbatim} ahol \texttt{P} a process azonosítója vagy regisztrált
+\end{code} 
+\noindent ahol \texttt{P} a process azonosítója vagy regisztrált
 neve, a \texttt{!} a küldés operátor. A jobboldalon álló kifejezés az üzenet,
 amely nem \emph{string} lehet, mint a fenti példában, hanem bármilyen Erlang
 kifejezés (tuple, fun, lista, stb). Másik node-ra ugyanígy lehet üzenetet
 küldeni, nincs különbség.
 
 \subparagraph{Üzenet fogadása} A \texttt{receive} utasítás szolgál az üzenetek
-fogadására. A függvényekhez hasonlóan \emph{clause}-okat tartalmaz, és itt is
+fogadására. 
+\begin{code}{erlang}{}
+receive
+  Pattern1 ->
+        ...;
+  Pattern2 ->
+        ...;
+  _ ->
+        ...
+end.
+\end{code}
+
+\noindent A függvényekhez hasonlóan \emph{clause}-okat tartalmaz, és itt is
 mintaillesztés alapján dől el, melyik ág fog lefutni. Minden process-hez
 tartozik egy \emph{mailbox}, amelyből a receive utasítással lehet kiolvasni az
 üzeneteket. Az utasítás addig olvassa a mailbox-ot, amíg nem talál egy olyan
@@ -825,40 +842,14 @@ tartozik egy \emph{mailbox}, amelyből a receive utasítással lehet kiolvasni a
 esetben az utolsó ág mintáját '\_'-ként megadni. Ez a minta mindenre
 illeszkedik, így végül minden üzenet törlődik a mailbox-ból. 
 
+Protokoll kialakítása.
+
+
 \newpage
 \section{Open Telecom Platform} 
 Behaviours. Supervisor hierarchies.  
 
 
-
-\noindent Üzenet küldése a \texttt{P} process-nek (ahol P értéke a process azonosítója):
-
-\begin{code}{erlang}{}
-P ! "Hello"
-\end{code}
-
-\noindent Üzenet küldése egy másik gépen futó process-nek:
-
-\begin{code}{erlang}{}
-P ! "Hello"
-\end{code}
-
-\noindent Semmi különbség. A programban nem kell külön figyelni arra, 
-hogy hol van a címzett, sem arra, hogy honnan jött az üzenet. Az alábbi
-kódrészlet mindkét esetben fogadja az üzenetet:
-
-\begin{code}{erlang}{}
-receive
-  Message ->
-      ...
-end
-\end{code}
-
-A \texttt{receive} utasítás addig vár, amíg üzenet nem érkezik, majd a Message
-névhez rendeli a tartalmát. Jelen esetben a \texttt{Hello} szöveget. Az utasítás
-több mintát is tartalmazhat. A fenti példában bármilyen üzenet is érkezik, azt
-a Message-hez rendeli.
-Protokoll kialakítása.
 
 
 \chapter{Soft realtime messaging -- a simple demo}
