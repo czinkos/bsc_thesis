@@ -928,9 +928,42 @@ a leggyakoribb feladattípusok megoldására létrehozott Open Telecom Platform
 (OTP) szoftverkönyvtár, amely központjában a magas rendelkezésre állású,
 párhuzamos rendszerek építése áll.
 
-\section{Open Telecom Platform (OTP)} 
-Behaviours. Supervisor hierarchies.  
+\section{Open Telecom Platform (OTP)} Nagyobb szoftverek fejlesztésekor
+elkerülhetetlen, hogy a fejlesztők valamilyen közös implementációs gyakorlatot
+kövessenek. Enélkül minden egyes fejlesztő kitalálja magának a világ legjobb
+megoldását (és ebben rendkívül kreatívak tudnak lenni), amit rajtuk kívül senki
+más nem ért. Az OTP formalizált keretet ad a process-fejlesztéshez. Hasonlóan a
+Java EE \emph{servlet}-eihez, egy interfészt definiál, amelyet minden Erlang
+fejlesztő ért, így a rendszer különböző emberek által fejlesztett részei egy
+koherens egészet alkotnak. Ezek mögött az interfészek mögött ráadásul általános
+problémák megoldásai állnak, nem kell újra és újra kitalálni például a
+hibakezelés módját.
 
+Az OTP viselkedésmintákat definiál (\emph{behaviour}), amelyekhez a megadott
+\emph{callback} függvényeket (a Java interfész függvényeinek implementálásahoz
+lehet hasonlítani) implementálva egy process modul hozható létre. Ezt a modult
+az OTP kezeli, és adott eseménynél meghívja a megfelelő függvényt. Az OTP-ben a
+processek hierarchiába rendezhetők, ennek megfelelően van háromféle típusú
+process.
+
+\subparagraph{Application} Az OTP application \emph{behaviour} egy Erlang/OTP
+alkalmazás, amely összefogja a modulok egy csoportját, és a process hierarchia
+csúcsán áll.
+
+\subparagraph{Supervisor} Olyan \emph{behaviour}, amelynek feladata más processek
+felügyelete, folyamatosan monitorozza azok állapotát, hiba esetén észleli, hogy
+a processben hiba történt, és a megadott újraindítási stratégiának megfelelően
+újraindítja vagy hagyja leállni. Supervisor processek alá tartozhatnak
+\emph{worker} és további supervisor processek.
+
+\subparagraph{Worker} Olyan process, amely valamilyen alkalmazás-specifikus
+feladatot végez, nem felügyel más process-eket. Az OTP az alábbi
+\emph{behaviour}-öket biztosítja:
+\begin{itemize}
+\item \emph{Generic server (gen\_server)}: általános szerver;
+\item \emph{Generic Finit State Machine (gen\_fsm)}: véges automata;
+\item \emph{Generic Event Manager (gen\_event)}: események, alarmok kezeléséhez.
+\end{itemize}
 
 
 
