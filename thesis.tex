@@ -965,41 +965,44 @@ feladatot végez, nem felügyel más process-eket. Az OTP az alábbi
 \item \emph{Generic Event Manager (gen\_event)}: események, alarmok kezeléséhez.
 \end{itemize}
 
-A fenti celsius-fahrenheit átváltó modul gen\_server átirata:
+\newpage
+A fenti celsius-fahrenheit átváltó modul \emph{gen\_server} átirata:
 
 \begin{code}{erlang}{}
 -module(temp_otp).
 -behaviour(gen_server).
 
--export([start_link/0]).
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3, terminate/2]).
+-export([start/0]).
+-export([init/1, handle_call/3, handle_cast/2, 
+         handle_info/2, code_change/3, terminate/2]).
 
--record(state, {}).
-
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+start() ->
+  gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init(_Options) ->
-  {ok, #state{ } }.
+  {ok, 0 }.
 
 handle_cast({From, celsius, T}, State) ->
   From ! {fahrenheit, c2f(T)},
-  {noreply, State};
+  {noreply, State + 1};
 handle_cast({From, fahrenheit, T}, State) ->
   From ! {celsius, f2c(T)},
-  {noreply, State};
+  {noreply, State + 1};
 handle_cast(stop, State) ->
+  io:format("Server handled ~p requests.~n", [State]),
   {stop, normal, State};
 handle_cast(_Info, State) ->
   {noreply, State}.
 
-handle_call(_Request, _From, State) ->
-  {noreply, State}.
+handle_call({celsius, T}, _From, State) ->
+  {reply, {fahrenheit, c2f(T)}, State + 1};
+handle_call({fahrenheit, T}, _From, State) ->
+  {reply, {celsius, f2c(T)}, State + 1}.
 
 handle_info(_Info, State) ->
   {noreply, State}.
 
-terminate(Reason, State) ->
+terminate(_Reason, _State) ->
   ok.
 
 code_change(_OldVsn, State, _Extra) ->
@@ -1011,10 +1014,47 @@ c2f(C) ->
   9 * C / 5 + 32.
 \end{code}
 
-\chapter{Soft realtime messaging -- a simple demo}
+A fenti modul egy szerver, amely kétféleképpen használható: szinkron
+(\texttt{handle\_ call} callback függvény) és aszinkron (\texttt{handle\_cast})
+módon. Indításkor a modul nevén regisztráljuk a process-t
+(\texttt{gen\_server:start\_link}), így process azonosító helyett erre a névre
+is lehet címezni az üzeneteket. A szervernek háromféleképpen lehet üzenetet
+küldeni: a \texttt{gen\_server:cast()} és \texttt{gen\_server:call()}
+függényekkel, és a standard módon a \texttt{!} operátorral (ezt az esetet a
+\texttt{handle\_info()} függvénnyel lehet kezelni).
 
-\chapter{A messaging szerver}
-Protokoll kialakítása ().
+A függvények megkapják az init függvényben inicializált \texttt{State}
+paramétert (jelen esetben egy egész számot) minden egyes hívásnál. Ez a változó
+használható a szerver állapotának tárolására, a példában az elvégzett
+konverziók számát tartalmazza, amit leállításkor kiír. Próba a shell-ben:
+
+\begin{code}{}{}
+1> c(temp_otp).
+{ok,temp_otp}
+2> temp_otp:start().
+{ok,<0.42.0>}
+3> gen_server:cast(temp_otp, {self(), celsius, 37}).
+ok
+4> flush().
+Shell got {fahrenheit,98.6}
+ok
+5> {fahrenheit,F}=gen_server:call(temp_otp, {celsius, 37}).
+{fahrenheit,98.6}
+6> F.
+98.6
+7> gen_server:cast(temp_otp, stop).                           
+Server handled 2 requests.
+ok
+\end{code}
+
+A fenti példában a szerver nem része semmilyen process hierarchiának, nem
+felügyeli supervisor a működését. A kód bonyolultabbnak tűnhet a nem OTP-s
+megoldásnál, de ahogy nem egy ennyire egyszerű, teljesen egyedülálló szerver
+process-ről van szó, az OTP-s környezet hamar behozza az árát. Erre nézünk egy
+kicsit összetettebb, de azért még követhető példát a következő fejezetekben.
+
+\chapter{Az állatorvosi ló}
+
 \section{Felépítés}
 \section{Hibatűrés}
 \section{Elosztott rendszer -- kell a redundancia}
