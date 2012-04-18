@@ -941,9 +941,9 @@ hibakezelés módját.
 
 Az OTP viselkedésmintákat definiál (\emph{behaviour}), amelyekhez a megadott
 \emph{callback} függvényeket (a Java interfész függvényeinek implementálásahoz
-lehet hasonlítani) implementálva egy process modul hozható létre. Ezt a modult
+lehet hasonlítani) implementálva egy process-modul hozható létre. Ezt a modult
 az OTP kezeli, és adott eseménynél meghívja a megfelelő függvényt. Az OTP-ben a
-processek hierarchiába rendezhetők, ennek megfelelően van háromféle típusú
+process-ek hierarchiába rendezhetők, ennek megfelelően van háromféle típusú
 process.
 
 \subparagraph{Application} Az OTP application \emph{behaviour} egy Erlang/OTP
@@ -965,7 +965,51 @@ feladatot végez, nem felügyel más process-eket. Az OTP az alábbi
 \item \emph{Generic Event Manager (gen\_event)}: események, alarmok kezeléséhez.
 \end{itemize}
 
+A fenti celsius-fahrenheit átváltó modul gen\_server átirata:
 
+\begin{code}{erlang}{}
+-module(temp_otp).
+-behaviour(gen_server).
+
+-export([start_link/0]).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3, terminate/2]).
+
+-record(state, {}).
+
+start_link() ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+
+init(_Options) ->
+  {ok, #state{ } }.
+
+handle_cast({From, celsius, T}, State) ->
+  From ! {fahrenheit, c2f(T)},
+  {noreply, State};
+handle_cast({From, fahrenheit, T}, State) ->
+  From ! {celsius, f2c(T)},
+  {noreply, State};
+handle_cast(stop, State) ->
+  {stop, normal, State};
+handle_cast(_Info, State) ->
+  {noreply, State}.
+
+handle_call(_Request, _From, State) ->
+  {noreply, State}.
+
+handle_info(_Info, State) ->
+  {noreply, State}.
+
+terminate(Reason, State) ->
+  ok.
+
+code_change(_OldVsn, State, _Extra) ->
+  {ok, State}.
+
+f2c(F) ->
+  5 * (F - 32) / 9.
+c2f(C) ->
+  9 * C / 5 + 32.
+\end{code}
 
 \chapter{Soft realtime messaging -- a simple demo}
 
