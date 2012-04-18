@@ -38,7 +38,7 @@ framexleftmargin=0.5cm, framexrightmargin=0.5cm}}
 \lstset{caption=\thelstlisting. \lstlistingname}
 
 \author{Czinkos Zsolt}
-\title{Erlang/OTP: magas rendelkezésre állású elosztott rendszerek fejlesztése}
+\title{Erlang/OTP: magas rendelkezésre állású, elosztott rendszerek fejlesztése}
 \date{2012-04-28}
 
 \begin{document}
@@ -82,7 +82,7 @@ hálózatoknak, egyre inkább itt keresi (és többnyire találja meg) azt a ter
 ahol ismerik, és ő is ismer, ahol ura annak az eszköztárnak, amelynek
 birtokában különböző -- rövid, prompt, aszinkron, szöveg, hang vagy videó --
 \textit{üzenetek} segítségével ápolni tudja kapcsolatait. Ez a
-kapcsolatrendszer és eszköztár jelenti azt az új mikroikozmoszt, amelyben a
+kapcsolatrendszer és eszköztár jelenti azt az új mikrokozmoszt, amelyben a
 felhasználó -- cselekvő- és befolyásolóképessége tudatában -- kényelemben és
 biztonságban érzi magát.
 
@@ -175,7 +175,7 @@ képzettebb, tapasztaltabb (így drágább) fejlesztőket kíván meg, egyáltal
 kicsi a lépés a nem párhuzamos pogramozástól (\emph{sequential programming}).
 Egyszerűen fogalmazva: egynél több cselekvő dolgozik egyazon rendszeren belül,
 ezért az egyes állapotváltoztatásoknál gondoskodni kell arról, hogy a több
-helyről kezdeményezett műveletek után a rendszer allapota konzisztens maradjon.
+helyről kezdeményezett műveletek után a rendszer állapota konzisztens maradjon.
 
 A Java nyelvben például a párhuzamos programozást a \emph{thread}-ek teszik
 lehetővé, a konzisztens állapot megőrzését pedig a \emph{synchronized}
@@ -188,7 +188,7 @@ programozásra} és az \emph{aktor modellre}.
 Az Erlang funkcionális programozási nyelv. Az imperatív nyelvekkel szemben,
 ahol egy implicit állapot (\emph{state}) változik adott nyelvi konstrukciók
 eredményeképp, a tisztán funkcionális nyelvekben nincs implicit állapot, a
-függvények mellékhatás-mentesek (\emph{side effect free}). Minden függvényhívás
+függvények mellékhatás-mentesek (\emph{side-effect free}). Minden függvényhívás
 tartalmaz minden szükséges argumentumot, ami az eredményhez szükséges (akár
 explicit állapotot is, ha szükséges), és az azonos paraméterekkel rendelkező
 függvényhívások mindig ugyanazt az eredményt adják (\emph{referential
@@ -215,11 +215,11 @@ public static int fib(int n) {
 \end{code}
 
 A fenti egyszerű példában szerepel értékadás, feltétel vizsgálat és ciklus is.
-A végrehajtás során az 'a' változó többször kap új értéket, a ciklus futásának
+A végrehajtás során az \texttt{a} változó többször kap új értéket, a ciklus futásának
 végén tartalmazza az eredményt.
 
 Az Erlang deklaratív nyelv, a ,,hogyan'' helyett a ,,mit'' írja le: a fejlesztő
-kifejezéseket ad meg, mintaillesztésekkel -- kijelentéseket tesz. Funkcionális
+kifejezéseket ad meg mintaillesztésekkel -- kijelentéseket tesz. Funkcionális
 nyelveknél a függvény alapvető nyelvi elem, amelynek segítségével a működés
 leírható. A Fibonacci példa Erlang változata:
 
@@ -236,7 +236,7 @@ helyett rekurzív függvényhívásokkal, feltételes elágazás helyett a függ
 deklarációba írt kifejezéssel (jelen esetben pozitív számokra értelmezett a
 függvény).
 
-A funkcionális pogramnyelvek fontos ismérve az is, hogy a fügvények teljes jogú
+A funkcionális pogramnyelvek fontos ismérve az is, hogy a függvények teljes jogú
 elemei a nyelvnek (\emph{first class functions}). Bárhol, ahol valamilyen érték
 szerepelhet, függvény is: listák, rekordok, adatszerkezetek elemeként. Függvény
 argumentuma illetve visszatérési értéke is lehet függvény (\emph{higher order
@@ -263,8 +263,8 @@ illetve \texttt{Paratlan} függvények változók (amik nem igazi változók, cs
 egyszer kaphatnak értéket), amelyek értéke egy-egy névtelen függvény
 (\emph{$\lambda$ function}).
 
-Az Erlang nem tisztán funkcionális környezet -- lévén ipari alkalmazásra
-készült -- lehet írni olyan függvényeket, amelyek nem mellékhatás mentesek,
+Az Erlang nem tisztán funkcionális környezet, lévén ipari alkalmazásra
+készült, lehet írni olyan függvényeket, amelyek nem mellékhatás mentesek,
 például fájl- és adatbázis műveletek. A funkcionális programozás alapelvei
 azonban jelen vannak, lehet tisztán funkcionális alkalmazást is írni, és a
 fentebb ismertetett elvek maradéktalanul alkalmazhatók. Nem léteznek globális
@@ -275,7 +275,7 @@ megadni, és a visszatérési értékbe is betenni. A párhuzamos programozást 
 nagyban megkönnyíti: nem kell attól félni, hogy egy értéket egy másik folyamat
 vagy függvényhívás felülír, mindig minden ,,kézben van''. Hogyan lehet így
 bármi használhatót írni? Hogyan lehet egy komplex rendszert felépíteni,
-amelynek egyes moduljai inputokar várnak más moduloktól?
+amelynek egyes moduljai inputokat várnak más moduloktól?
 
 Az egyes folyamatok (\emph{process}) üzeneteket küldenek egymásnak, amelyek
 egy-egy másolatát (nem csak egy referenciát!) kapja meg a címzett fél, az
@@ -358,11 +358,11 @@ remekül megírva a szoftver, ha a hardver meghibásodik alatta vagy kimegy az
 adatigénye van, hogy egyetlen mai számítógép sem elegendő hozzá önmagában. A
 feladatot ilyenkor partícionálni kell, és az egyes részfeladatokat egymással
 párhuzamosan kell elvégezni. Több gépre kell szoftvert írni, és ez az Erlang
-erőssége. A fentebb röviden ismertetett funkcionális programozás elve, és az
+erőssége. A fentebb röviden ismertetett funkcionális programozás elve és az
 aktor modell egyszerűbbé, átláthatóbbá teszi a programok szerkezetét, magas
 szintű nyelven lehet elosztott rendszert fejleszteni, az egyes Erlang egységek
 (\emph{node}) közti kommunikáció mikéntjéről mit sem kell tudni (az OSI
-hálózati hierarchia applikációs szintjén biztosított protokoll, és a nyelvbe
+hálózati hierarchia applikációs szintjén biztosított protokoll és a nyelvbe
 épített egyszerű üzenetküldési, fogadási szintaxis biztosítja a teljes
 transzparenciát a programozó számára).
 
@@ -438,7 +438,7 @@ nyelvet, a cél, hogy a következőkben bemutatott alkalmazás felépítése, a
 modulok érthetőek legyenek.
 
 Minden Erlang folyamathoz tartozik egy \emph{shell}, amely egy REPL (\emph{Read
-Eval Process Loop} alkalmazás a futó környezethez. Ennek segítségével egy
+Eval Process Loop}) alkalmazás a futó környezethez. Ennek segítségével egy
 egyszerű parancssoros felületen ki lehet próbálni parancsokat, műveleteket, sőt
 -- mint később még látni fogjuk -- ,,éles'' (\emph{production}) környzeteknél
 is hozzáférhetünk a rendszerhez (például hibakeresés céljából).
@@ -458,7 +458,7 @@ Eshell V5.7.4  (abort with ^G)
 
 \subsection{Típusok} Az Erlang dinamikus típusos nyelv (\emph{dynamic typed
 programming language}).  A statikus típusos nyelvekkel (pl. Java) szemben a
-típusellenőrzés futásidőben (\emph{runtime}) történik nem fordításkor, nem a
+típusellenőrzés futásidőben (\emph{runtime}) történik, nem fordításkor, nem a
 változóknak van típusa, hanem az értékeknek.  Például egy függvény
 argumentumánál nem kell deklarálni, hogy milyen típusú paramétert fog kapni,
 kaphat bármilyet, az futásidőben derül ki, hogy mit kapott, és azt tudja-e
@@ -520,7 +520,7 @@ az egyes elemekre. Futás közben semmiben sem különböznek a tuple-től, a
 programozás megkönnyítésére szolgál. Például:
 
 \begin{code}{erlang}{}
--record(sikidom, { nev, a\_oldal, b\_oldal}).
+-record(sikidom, { nev, a_oldal, b_oldal}).
 
 terulet(S) ->
   S#sikidom.a_oldal * S#sikidom.b_oldal.
@@ -658,13 +658,13 @@ celsius
 mező értékét szeretnénk kinyerni (és a rekord szintaxisú mintaillesztések akkor
 is működni fognak, ha a mezőszám megváltozik, míg tuple-nél az összes helyen
 módosítani kellene a kódot, ahol mintaillesztésben szerepel). A 6. utasításnál
-látszik, hogy a tuple szintakxisú minta is megfelel a jobboldali rekordnak.
+látszik, hogy a tuple szintaxisú minta is megfelel a jobboldali rekordnak.
 
 \subsection{Függvény definiálása} A mintaillesztés a függvények definiálásánál
 is nagyon hasznos, a függvény argumentumainak mintát megadva lehet a komplexebb
 paraméterből változóknak értéket adni, illetve külön állításokat
 (\emph{function clause}) megfogalmazni a függvényhez, milyen input esetén mit
-csináljon. Egy névvel, és azonos számú argumentummal (\emph{function arity})
+csináljon. Egy névvel és azonos számú argumentummal (\emph{function arity})
 egy függvényt lehet definiálni, de több állítást lehet tenni azon belül. Egy
 névvel, de eltérő számú argumentummal akármennyi különálló függvényt lehet
 definiálni. Az általános szintaxis jól látszik a következő egyszerű példán:
@@ -689,14 +689,14 @@ függvény két paraméterrel (Erlangban a jelölése: \texttt{convert/2}), para
 nélkül (\texttt{convert/0}) és egy paraméterrel (\texttt{convert/1}). A két
 paraméteres függvény három \emph{function clasue}-ból áll: a kapott paraméter
 alapján mintaillesztéssel dől el, hogy melyik rész fut le. Az '\texttt{\_}' jel
-azt jelenti, hogy ,,bármi'', mindenre illeszkedik. Ha tehát a függvényhívás a
+azt jelenti, hogy ,,bármi'' -- mindenre illeszkedik. Ha tehát a függvényhívás a
 következő: \texttt{convert(celsius, 36)}, akkor a legelső számítás eredményét
 adja vissza, mert a \texttt{celsius} atom megegyezik a mintával, a \texttt{T}
 változó pedig megkapja értéknek a 36-ot.
 
 Anoním függvények definiálása hasonló módon történik, csak ott a név helyett a
 \texttt{fun} kulcsszó szerepel, az egyes \emph{function clause}-oknál pedig
-csak a zárójelbe írt argumentumlista. Anoním függvényt bárhol definiálhatunk,
+csak a zárójelbe írt argumentum lista. Anoním függvényt bárhol definiálhatunk,
 ahol változót is írhatnánk.
 
 \begin{code}{erlang}{}
@@ -758,7 +758,8 @@ elnevezéssel lehet megoldani a szükséges tagolást. A modulokban az alábbi
 részek szerepelhetnek:
 
 \begin{itemize}
-\item modul attribútumok, verziószám, szerző, név, interfész függvények;
+\item modul attribútumok, verziószám, szerző, név, interfész függvények
+deklarálása;
 \item rekord, makró definíciók, külső fájlok (\emph{header}) beillesztése;
 \item függvények.
 \end{itemize}
@@ -789,7 +790,7 @@ kötelező ugyanilyen nevű fájlba tenni.
 \subsection{Konkurens programozás}
 A fentebb röviden bemutatott aktor modellen alapul a párhuzamos
 programozás az Erlangban. Az aktorok \emph{process}-ek, amelyek tudnak üzenetet
-fogadni (\emph{receive}), és küldeni (\emph{send}). A process az Erlang VM
+fogadni (\emph{receive}) és küldeni (\emph{send}). A process az Erlang VM
 fennhatósága alá tartozik, nem külön operációs rendszer folyamat, indítása nem
 igényel sok erőforrást, egy-egy rendszeren belül akár többszázezer process-t
 is lehet indítani. Például egy HTTP szerver megvalósítása lehet az, hogy minden
@@ -862,13 +863,13 @@ start() ->
   end.
 \end{code}
 
-A fenti start függvény elindít egy másik process-t, és összekapcsolja a
+A fenti \texttt{start} függvény elindít egy másik process-t, és összekapcsolja a
 jelenlegivel. Amikor a másik process leáll, érkezik egy üzenetet erről, aminek a
 formátumát a fenti \texttt{receive} blokkban szereplő mintán lehet látni. 
 
 Ahhoz, hogy egy process folyamatosan fusson, újra és újra meg kell hívni a
 \texttt{receive} utasítást (hogy várakozzon üzenetre). Az alábbi modul egy
-egy process-t futtat, amíg egy \texttt{stop} atomot nem kap üzenetként. A
+process-t futtat, amíg egy \texttt{stop} atomot nem kap üzenetként. A
 \texttt{?MODULE} makró a modul nevét tartalmazza.
 
 \begin{code}{erlang}{}
@@ -899,7 +900,7 @@ c2f(C) ->
   9 * C / 5 + 32.
 \end{code}
 
-A puding próbája az evés -- az Erlang shellben. A \texttt{self()} függvény az
+A puding próbálja az evést -- az Erlang shellben. A \texttt{self()} függvény az
 aktuális process azonosítóját adja vissza, jelen esetben az shell-ét; a
 \texttt{flush()} shell-utasítás pedig kilistázza és törli a shell mailbox-át.
 
