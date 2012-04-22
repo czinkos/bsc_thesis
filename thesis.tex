@@ -1115,15 +1115,114 @@ alkalmazásra bízza.
 
 \subparagraph{zm\_channel\_sup} Supervisor, amely a csatorna process-eket
 felügyeli. Minden elindított csatorna ez alá a folyamat alá kerül, a
-zm\_channel\_sup indítja, állítja le, monitorozza őket.
+\texttt{zm\_channel\_sup} indítja, állítja le, monitorozza őket.
 
-\subparagraph{zm\_sub\_mon} Az feliratkozásokat kezeli, és monitorozza. Ha egy
+\subparagraph{zm\_sub\_mon} A feliratkozásokat kezeli, és monitorozza. Ha egy
 előfizető folyamat (\emph{subscriber}) véget ér (rendben vagy rendellenesen),
 akkor ez a process gondoskodik arról, hogy a csatornák ne küldjenek erre a
 címre több üzenetet.
 
+A fenti négy process alkotja a rendszert, ehhez lehet különböző csatornákat
+írni. A ZM szerverhez tartozik két egyszerű csatorna-implementáció. Az egyik
+egyszerűen csak továbbítja az előfizetők felé az üzeneteket, az előfizető a
+felirakozáskor megadhat egy szűrő függvényt (\emph{filter function}), amelyet
+minden üzenetre lefuttat a csatorna, és csak akkor továbbítja, ha a függvény
+visszatérési értéke \texttt{true}. A másik egy késleltetett csatorna
+(\emph{delayed}), amely a beérkező üzenetet a feliratkozáskor megadott
+időtartam után küldi csak tovább. Ezzel lehet például biztosítani a tőzsdei
+adatoknál szükséges 15 perces késleltetést (előfizetéstől függően ez lehet
+real-time adatközlés is).
+
+A csatornák megvalósítása egy-egy \emph{gen\_server} modul. A behaviour-höz
+tartozó callback függvények implementálása után az alábbi paranccsal indítható.
+
+\begin{code}{}{}
+zm_channel:start(zm_ch_delayed, stock_exchange, []).
+\end{code}
+
+Ebben az esetben a \texttt{zm\_ch\_delayed} modulban implementált csatorna indul el
+\texttt{stock\_ exchange} néven. A \texttt{zm\_ch\_delayed} modul \texttt{handle\_cast}
+függvénye (aszinkron a csatornáknak való üzenetküldés). 
+
+\begin{code}{erlang}{}
+handle_cast({msg, {_Timestamp, _} = Message}, 
+            #state{ id=ChannelId } = State) ->
+  Send = fun
+    ({SubPid, SubscriptionRef, []}, _) ->
+      SubPid ! {msg, {ChannelId, SubscriptionRef}, Message},
+      sent;
+    ({SubPid, SubscriptionRef, [{delay, Delay}]}, _) ->
+      erlang:send_after(timer:minutes(Delay), 
+                        SubPid, 
+                        {msg, {ChannelId, SubscriptionRef}, 
+                        Message}),
+      delayed;
+    ({_SubPid, _SubscriptionRef, _}, _) ->
+      invalid_option
+  end,
+  zm_sub_mon:fold_subs(ChannelId, {0, 0, 0}, Send),
+  {noreply, State};
+
+handle_cast(_Info, State) ->
+  {noreply, State}.
+\end{code}
+
+Leszámítva a \texttt{gen\_server} default callback függvényeit, a fenti
+\texttt{handle\_cast} jelenti a tőzsdei adatok szétküldésére szolgáló
+csatornát. A \texttt{Send} változóhoz rendelt függvényt a
+\texttt{zm\_sub\_mon:fold\_subs()} hívás minden egyes előfizetőre végrehajtja. A
+feliratkozásnál egy opciót lehet megadni: azt, hogy hány perces késleltetéssel
+kapja meg az előfizető az adatokat. Egy példa a shell-ben többet mond ezer
+szónál. 
+
+\begin{code}{}{}
+(zm@notebook)1> zm_channel:start(zm_ch_delayed, 
+                                 stock_exchange, []).
+{[{ok,started}],[]}
+(zm@notebook)2> zm_channel:subscribe(stock_exchange, 
+                                     self(), []).   
+#Ref<0.0.0.443>
+(zm@notebook)3> zm_channel:send(stock_exchange, 
+                      {msg, {erlang:now(), "SHARE_1 15"}}),
+(zm@notebook)3> receive
+(zm@notebook)3> M -> M
+(zm@notebook)3> end.
+{msg,{stock_exchange,#Ref<0.0.0.443>},
+     {{1335,128575,402055},"SHARE_1 15"}}
+\end{code}
+
+A fenti \emph{subscribe} eredménye egy \emph{real-time} előfizetés, a beérkező
+üzenetet azonnal kiküldi a csatorna. A késleltetett előfizetéshez a
+\texttt{subscribe} függvényben meg kell adni a késleltetés időtartamát.
+
+\begin{code}{}{}
+zm_channel:subscribe(stock_exchange, self(), [{delay, 15}]).
+\end{code}
+
+Így az üzeneteket 15 perccel érkezés után továbbítja a \texttt{stock\_exchange}
+csatorna. De mi történik, ha hiba van? Hol a hibakezelés a fenti
+\texttt{handle\_cast} függvényből?
+
 \subsection{Hibatűrés}
+Az Erlang fejlesztési gyakorlatra nem jellemző a defenzív -- hibavizsgálattól
+függő elágazások a kódban -- programozás. Az ajánlott módszer az, hogy a
+függvényekben feltételezzük, hogy az input adatok helyesek, és nem írjuk körül
+a lehetőségeket, ha valami mégsem lenne megfelelő. Egyetlen kivétel a
+felhasználó által megadott adatok bekérésére szolgáló függvények, ott
+elkerülhetetlen a vizsgálódás, hiszen ki kell tudni írni, mi a baj a megadott
+adatokkal.
+
+A hibákat a kódban nem kell kezelni, egyszerűen hagyni kell a process-t
+elbukni, és a supervisor-ra bízni a döntést, újraindítja-e a process-t vagy
+sem. A hiba úgy derül ki függvényhívásnál, hogy a várható értéket adjuk meg
+baloldali mintaként. Amennyiben a függvény nem a várt értéket adja vissza, a
+minta nem illeszkedik, és az hibai -- a process leáll (\emph{crash}). A
+supervisor ezt észreveszi, meghívja a gen\_server \texttt{terminate}
+függvényét, majd újraindítja a process-t. Ha adott időn belül túl sokszor
+fordulna elő hiba, akkor nem próbálkozik újra.
+
 \subsection{Elosztott rendszer -- kell a redundancia}
+
 
 \section{Web interfész}
 \subsection{RESTful webservices}
