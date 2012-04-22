@@ -1055,15 +1055,79 @@ megoldásnál, de ahogy nem egy ennyire egyszerű, teljesen egyedülálló szerv
 process-ről van szó, az OTP-s környezet hamar behozza az árát. Erre nézünk egy
 kicsit összetettebb, de azért még követhető példát a következő fejezetekben.
 
-\chapter{Az állatorvosi ló}
-%\includegraphics{fig/ZmSup.pdf}
-\section{Felépítés}
-\section{Hibatűrés}
-\section{Elosztott rendszer -- kell a redundancia}
+\chapter{Tőzsdei ,,ticker'' alkalmazás} Állatorvosi lóként egy egyszerű
+üzenetküldésen alapuló webes szolgáltatást fogunk megvizsgálni, ezen mutatjuk
+be az eddigiekben leírtak alkalmazását egy kicsi, ám működőképes rendszer
+megalkotásában. A rendszer célja, hogy a tőzsde felöl érkező pillanatnyi
+kereskedési adatokat (melyik részvényből milyen áron hány darabot adtak el az
+adott tranzakció során) a weben keresztül eljuttasa a felhasználóknak. A webes
+felület lehet akár egy előfizetői oldal, ahol a tőzsdei adatok real-time
+jelennek meg, vagy lehet egy újság, ahol a szokásos 15 perces késleltetéssel
+lehet látni az árakat. A rendszerrel szemben támasztott elvárások:
+\emph{soft-realtime} működés, magas rendelkezésre állás, belátható üzemeltetési
+költségek. A dolgozat terjedelmi korlátai és az átláthatóság miatt nem térünk
+ki minden egyes részletre, nem faragunk csicsás weboldalt, de a fenti
+elvárásokat kielégítő megoldásokat mind bemutatjuk.
 
-\chapter{Web interfész}
-\section{RESTful webservices}
-\section{HTML5 -- websockets}
+A magas rendelkezésre állás követelményéből fakadóan egynél több gépre lesz
+szükség. Az egyszerűség és a terminológia kedvéért az alábbiakban Erlang
+node-ként hivatkozunk az egyes gépekre.
+
+A tőzsdei kereskedési rendszer kívül esik a látókörünkün, az adatokat
+egyszerűen inputként kezeljük, melyek Erlang üzenet formájában érkeznek. A
+tőzsdei kereskedést egy egyszerű véletlenszám-generátorral dolgozó process
+szimulálja.
+
+A feladat magját jelentő üzenetküldés-kezelő rendszert egy külön, általánosan
+használható szerverként implementáljuk, erre építjük a webes felületet nyújtó
+egyszerű kis webalkalmazást.
+
+\section{ZM -- üzenetküldés, fogadás}
+A ZM fantázinevű alkalmazás egy \emph{publish-subscribe} rendszer, amely
+csatornákat (\emph{channel}) definiál, amelyekre fel lehet iratkozni
+(\emph{subscribe}), és amelyekre üzenetet lehet küldeni (\emph{publish}). A ZM
+szerver biztosítja, hogy az egyes csatornákhoz küldött üzenetet megkapják az
+előfizetők (,,akik'' maguk is process-ek) függetlenül attól, hogy melyik gépen
+küldték az üzenetet, és kezeli a csatornák működésében előforduló hibákat. A ZM
+keretet ad alkalmazásoknak, amelybe be lehet illeszteni az adott alkalmazás
+saját csatorna-implementációit (\emph{gen\_server}-ként). Így az üzenetküldés
+szolgáltatás egyszerűen beilleszthető például egy webes szolgáltatásba,
+használatához csak a csatornákat kell implementálni.
+
+\subsection{Felépítés}
+A ZM szerver felépítése az OTP alapelveknek felel meg, az egyes feladatokat
+önálló processek végzik, a processek egy hierarchiát alkotnak, ahol
+supervisor-ok felügyelik az alattuk futó folyamatokat. Az alábbi ábrán néven
+nevezzük az egyes elemeket.
+%\includegraphics[clip=true, trim= 0 18cm 0 1cm]{fig/ZmSup.pdf}
+
+\subparagraph{zm\_sup} A gyökere a process-fának. Ez a supervisor kezeli az
+alábbi három folyamatot. Újraindítási stratégiája: \emph{one\_for\_one}, ami
+azt jelenti, hogy ha valamelyik process leáll, akkor azt az egyet indítja újra,
+a többivel nem foglalkozik.
+
+\subparagraph{zm\_em\_sys} \emph{Event manager}, amely eseményeket fogad,
+és azokat a hozzácsatolt \emph{event handler}-eknek továbbítja. A rendszer
+működése során a számottevő eseményekről értesíti (\emph{notify}) ezt a
+process-t, és például egy hozzácsatolt naplózó (\emph{logger}) handler egy
+fájlban rögzíti a tényt. A ZM nem tartalmaz \emph{handler}-t, azt az
+alkalmazásra bízza.
+
+\subparagraph{zm\_channel\_sup} Supervisor, amely a csatorna process-eket
+felügyeli. Minden elindított csatorna ez alá a folyamat alá kerül, a
+zm\_channel\_sup indítja, állítja le, monitorozza őket.
+
+\subparagraph{zm\_sub\_mon} Az feliratkozásokat kezeli, és monitorozza. Ha egy
+előfizető folyamat (\emph{subscriber}) véget ér (rendben vagy rendellenesen),
+akkor ez a process gondoskodik arról, hogy a csatornák ne küldjenek erre a
+címre több üzenetet.
+
+\subsection{Hibatűrés}
+\subsection{Elosztott rendszer -- kell a redundancia}
+
+\section{Web interfész}
+\subsection{RESTful webservices}
+\subsection{HTML5 -- websockets}
 
 \chapter{Üzemeltetés, karbantartás}
 \section{Naplózás}
