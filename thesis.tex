@@ -379,6 +379,8 @@ node-ok számát egy hálózaton belül, bizonyos szám felett már túl nagy te
 jelent a node-ok egymás közti adminisztrációs kommunikációja. Szerencsére node-ot lehet
 rejtett üzemmódban is indítani, így nem jelenik meg a többi node listáján.
 
+\includegraphics[clip=true, trim= 0 20cm 0 3cm]{fig/Nodes.pdf}
+
 Erlang hálózatok belső, biztonságos környezetben használatosak, a klaszteren
 (\emph{cluster}) kívüli világgal, az interneten keresztül, valamelyik IP alapú
 protokollal -- TCP, UDP, SCTP -- lehet kommunikálni. Egy webszolgáltatás
@@ -1099,7 +1101,7 @@ A ZM szerver felépítése az OTP alapelveknek felel meg, az egyes feladatokat
 önálló processek végzik, a processek egy hierarchiát alkotnak, ahol
 supervisor-ok felügyelik az alattuk futó folyamatokat. Az alábbi ábrán néven
 nevezzük az egyes elemeket.
-%\includegraphics[clip=true, trim= 0 18cm 0 1cm]{fig/ZmSup.pdf}
+\includegraphics[clip=true, trim= 0 18cm 0 1cm]{fig/ZmSup.pdf}
 
 \subparagraph{zm\_sup} A gyökere a process-fának. Ez a supervisor kezeli az
 alábbi három folyamatot. Újraindítási stratégiája: \emph{one\_for\_one}, ami
@@ -1492,13 +1494,66 @@ függvénnyel más és más node-okon indítja el.
 
 Az egyes node-ok összekapcsolása egy egyszerű \texttt{net\_adm:ping(Node)}
 hívással történet -- azután felkerül a \texttt{Node} az ismert node-ok
-listájára. Lássuk működés közben!
+listájára. Lássuk működés közben! 
+
+A két node \texttt{zm@notebook} és \texttt{zm2@notebook} néven fut. Mindkettőn
+fut a ZM szerver.
+
+A \texttt{||} kezdetű sorok a másik node shell-jét jelölik.
 
 \begin{code}{}{}
-
+(zm@notebook)2> net_adm:ping(zm2@notebook).
+(zm@notebook)3> nodes().
+[zm2@notebook]
+  || (zm2@notebook)3> nodes().
+  || [zm@notebook]
 \end{code}
 
+Csatorna elindítása és a két shell feliratkozása.
+
+\begin{code}{}{}
+(zm@notebook)4> zm_channel:start(zm_ch_delayed, 
+                                 stock_exchange, []).
+{[{ok,started},{ok,started}],[]}
+(zm@notebook)5> zm_channel:list().
+[stock_exchange]
+  || (zm2@notebook)2> zm_channel:list().
+  || [stock_exchange]
+
+(zm@notebook)6> zm_channel:subscribe(stock_exchange, self(), []).   
+#Ref<0.0.0.407>
+  || (zm2@notebook)3> zm_channel:subscribe(stock_exchange, 
+  ||                                       self(), []).
+  || #Ref<0.0.0.386>
+\end{code}
+
+Üzenetküldés az egyikről.
+
+\begin{code}{}{}
+(zm@notebook)7> zm_channel:send(stock_exchange, 
+                                {msg, {now(), "Kakukk"}}).
+abcast
+(zm@notebook)8> flush().
+Shell got {msg,{stock_exchange,#Ref<0.0.0.407>},
+               {{1335,201745,724599},"Kakukk"}}
+  || (zm2@notebook)5> flush().
+  || Shell got {msg,{stock_exchange,#Ref<0.0.0.386>},
+  ||                {{1335,201745,724599},"Kakukk"}}
+\end{code}
+
+Az egyiken elküldött üzenetet megkapta mindkét shell.
+
+Itt az A4-es oldal adta korlátok miatt csak 2 node-dal néztünk egy példát, de
+ugyanilyen egyszerű további node-okat hozzáadni. Ahogy az új node elérhető, az
+is megkapja onnantól az összes üzenetet. Ezzel eljutottunk az alábbi
+felépítésig, már csak az hiányzik, hogy ne csak a shell process használja a
+csatornákat, hanem a külvilág is. Kapcsoljuk rá a böngésző előtt ülő
+felhasználókat a tőzsdéről érkező kereskedési adatokra!
+
 \section{Web interfész}
+\includegraphics[clip=true, trim= 0 18cm 0 1cm]{fig/NodesWeb.pdf}
+
+
 \subsection{RESTful webservices}
 \subsection{HTML5 -- websockets}
 
