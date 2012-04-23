@@ -1443,17 +1443,67 @@ hogy le kellene állni a folyamatnak. Ennek bemutatására itt helyhiány miatt 
 térünk ki, annyit megjegyzünk, hogy az is a fenti mechanizmuson alapul.
 
 
-\subsection{Elosztott rendszer -- kell a redundancia}
+\section{Elosztott rendszer -- egy gép nem elég}
+A fentiekben vázolt ZM szerver elosztott rendszerként való működését az alábbi
+kódrészletek biztosítják.
 
+\begin{code}{erlang}{}
+start(ChannelModule, ChannelId, Options) ->
+  rpc:multicall(?MODULE, do_start, 
+                  [ChannelModule, ChannelId, Options]).
+...
+stop(Channel) ->
+  rpc:multicall(?MODULE, do_stop, [Channel]).
+...
+send(Channel, Message) ->
+  gen_server:abcast(Channel, Message).
+\end{code}
+
+Ezen kívül minden megegyezik azzal, mintha csak egyetlen gépen futna a szerver
+(köszönhetően az aktor modellnek). Az \texttt{rpc:multicall} hívás minden egyes
+kapcsolódó node-on (\texttt{[node()|nodes()]} kifejezés adja meg a listát)
+lefuttatja a paraméterként megadott modul adott függvényét. A
+\texttt{gen\_server:abcast} ugyanazt jelenti, mint a \texttt{cast}, csak minden
+node-ra elküldi az üzenetet.
+
+A ZM működése tehát a következő. Minden node egyenrangú, minden csatorna elindul
+az összes node-on (függetlenül attól, hogy melyik gépen adták ki a start
+parancsot), és az elküldött üzenetet megkapja a csatorna minden node-on
+(függetlenül attól, hogy honnan küldték). Ez a felépítés lehetővé teszi, hogy a
+rendszer működőképes maradjon, ameddig egyetlen node is üzemel. Amennyiben a
+csatorna nem csak egyszerűen továbbküldi az üzenetet, hanem valamilyen -- akár
+számításigényes -- transzformációt is végrehajt azon, akkor a terhelés
+szétoszlik a node-ok között (minden csatorna elvégzi a feladatot a saját
+előfizetőinek). Ehhez a terheléseloszláshoz az kell, hogy az előfizető
+process-ek egyenletesen szóródjanak a node-ok között (az alábbiakban még lesz
+erre példa).
+
+Másfajta munkamegosztásra is mód van: előfordulhat, hogy olyan mennyiségű
+adatot kell kezelni, ami nem fér el egy gépen. Ekkor minden csatorna a nála
+meglévő adatokkal dolgozik, majd a végén egy elküldi az eredményt egy másik
+csatornának, ami összesíteni tudja az eredményt, és azt küldi ki az
+előfizetőknek. Ez alapján lehet egy egyszerű \emph{map-reduce} rendszert
+implementálni. Akkor is járható ez az út, ha nem adatból van sok, hanem a
+számítás rendkívül időigényes, ám a feladat partícionálható (pl. $\pi$ minél
+pontosabb meghatározása a Leibniz-módszerrel). Ehhez a feladatmegosztáshoz nem
+kell feltétlenül csatornát használni, elég ha egy csatorna a beérkező üzenet
+alapján részfeladatokat gyárt, és azokat a már ismerős \texttt{spawn}
+függvénnyel más és más node-okon indítja el.
+
+Az egyes node-ok összekapcsolása egy egyszerű \texttt{net\_adm:ping(Node)}
+hívással történet -- azután felkerül a \texttt{Node} az ismert node-ok
+listájára. Lássuk működés közben!
+
+\begin{code}{}{}
+
+\end{code}
 
 \section{Web interfész}
 \subsection{RESTful webservices}
 \subsection{HTML5 -- websockets}
 
-
-\chapter{Alkalmazási lehetőségek, kitekintés}
-
 \chapter{Összegzés}
+
 \appendix
 
 
