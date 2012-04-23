@@ -1216,10 +1216,144 @@ A hibákat a kódban nem kell kezelni, egyszerűen hagyni kell a process-t
 elbukni, és a supervisor-ra bízni a döntést, újraindítja-e a process-t vagy
 sem. A hiba úgy derül ki függvényhívásnál, hogy a várható értéket adjuk meg
 baloldali mintaként. Amennyiben a függvény nem a várt értéket adja vissza, a
-minta nem illeszkedik, és az hibai -- a process leáll (\emph{crash}). A
+minta nem illeszkedik, és az hiba -- a process leáll (\emph{crash}). A
 supervisor ezt észreveszi, meghívja a gen\_server \texttt{terminate}
 függvényét, majd újraindítja a process-t. Ha adott időn belül túl sokszor
 fordulna elő hiba, akkor nem próbálkozik újra.
+
+A hibakezelést az alábbi függvénnyel teszteljük. A csatornának üzenetként
+küldött \texttt{crash} atom nullával való osztást eredményez, amitől leáll a
+folyamat.
+
+\begin{code}{erlang}{}
+...
+handle_info(crash, State) ->
+  1 / 0, 
+  {noreply, State};
+...
+terminate(Reason, _S) ->
+  io:format("Channel terminated. Reason: ~p~n", [Reason]),
+  terminate.
+\end{code}
+
+A supervisor azonnal újraindítja a csatornát, és meghívja a modul
+\texttt{terminate} függvényét (ahol most csak egy konzol kiírás van, hogy
+látható legyen, valóban ez történik). Lássuk a shell-ben.
+
+A csatorna indítása:
+\begin{code}{}{}
+(zm@notebook)1> zm_channel:start(zm_ch_delayed, 
+                                 stock_exchange, []).
+...
+{[{ok,started}],[]}
+(zm@notebook)2> zm_channel:list().
+[stock_exchange]
+\end{code}
+
+A shell process feliratkozása a csatornára, majd egy üzenet küldés-fogadás --
+működik a csatorna:
+
+\begin{code}{}{}
+(zm@notebook)3> zm_channel:subscribe(stock_exchange, 
+                                     self(), []).   
+#Ref<0.0.0.498>
+(zm@notebook)4> zm_channel:send(stock_exchange, 
+                   {msg, {erlang:now(), "Kakukk"}}).
+abcast
+(zm@notebook)5> flush().                                                         
+Shell got {msg,{stock_exchange,#Ref<0.0.0.498>},
+               {{1335,179193,696571},"Kakukk"}}
+ok
+\end{code}
+
+\emph{Crash} előidézése. Az üzenetküldés utána azonnal jön a jelentés, hogy a
+\texttt{stock\_ exchange} csatornában hiba történt (jelen esetben:
+\texttt{badarith} -- aritmetikai). A \texttt{Channel terminated}
+kezdetű kiírást a fentebb bemutatott \texttt{terminate} függvénynek
+köszönhetjük.
+
+\begin{code}{}{}
+(zm@notebook)6> stock_exchange ! crash.                                          
+crash
+Channel terminated. Reason: {badarith,
+    [{zm_ch_delayed,handle_info,2},
+    {gen_server,handle_msg,5},
+    {proc_lib,init_p_do_apply,3}]}
+(zm@notebook)7> 
+=ERROR REPORT==== 23-Apr-2012::13:07:02 ===
+** Generic server stock_exchange terminating 
+** Last message in was crash
+** When Server state == {state,stock_exchange}
+** Reason for termination == 
+** {badarith,[{zm_ch_delayed,handle_info,2},
+              {gen_server,handle_msg,5},
+              {proc_lib,init_p_do_apply,3}]}
+
+=CRASH REPORT==== 23-Apr-2012::13:07:02 ===
+ crasher:
+  initial call: zm_ch_delayed:init/1
+  pid: <0.121.0>
+  registered_name: stock_exchange
+  exception exit:{badarith,[{zm_ch_delayed,handle_info,2},
+                            {gen_server,handle_msg,5},
+                            {proc_lib,init_p_do_apply,3}]}
+  in function  gen_server:terminate/6
+  ancestors: [zm_channel_sup,<0.102.0>,<0.86.0>]
+  messages: []
+  links: [<0.104.0>]
+  dictionary: []
+  trap_exit: false
+  status: running
+  heap_size: 377
+  stack_size: 24
+  reductions: 584
+ neighbours:
+\end{code}
+
+A supervisor is küldi a jelentést arról, hogy észlelte a hibát, és arról is,
+hogy újraindította a csatornát.
+
+\begin{code}{}{}
+=SUPERVISOR REPORT==== 23-Apr-2012::13:07:02 ===
+     Supervisor: {local,zm_channel_sup}
+     Context:    child_terminated
+     Reason:     {badarith,[{zm_ch_delayed,handle_info,2},
+                            {gen_server,handle_msg,5},
+                            {proc_lib,init_p_do_apply,3}]}
+     Offender:   [{pid,<0.121.0>},
+                  {name,stock_exchange},
+                  {mfa,{zm_ch_delayed,start_link,
+                        [stock_exchange,[]]}},
+                  {restart_type,transient},
+                  {shutdown,5000},
+                  {child_type,worker}]
+
+
+=PROGRESS REPORT==== 23-Apr-2012::13:07:02 ===
+          supervisor: {local,zm_channel_sup}
+             started: [{pid,<0.136.0>},
+                       {name,stock_exchange},
+                       {mfa,{zm_ch_delayed,start_link,
+                            [stock_exchange,[]]}},
+                       {restart_type,transient},
+                       {shutdown,5000},
+                       {child_type,worker}]
+\end{code}
+
+Ezután megint működik minden, mint a hiba előtt.
+
+\begin{code}{}{}
+(zm@notebook)8> zm_channel:list().                                               
+[stock_exchange]
+(zm@notebook)9> zm_channel:send(stock_exchange, 
+                    {msg, {erlang:now(), "Kakukk again"}}).
+abcast
+(zm@notebook)10> flush().                                                               
+Shell got {msg,{stock_exchange,#Ref<0.0.0.498>},
+               {{1335,179242,712806},"Kakukk again"}}
+ok
+\end{code}
+
 
 \subsection{Elosztott rendszer -- kell a redundancia}
 
@@ -1233,9 +1367,8 @@ fordulna elő hiba, akkor nem próbálkozik újra.
 Event manager, event handler.
 \section{Hibakeresés}
 Trace.
-\section{Hibajavítás, verzióléptetés}
+\section{Hibajavítás}
 Upgrade.
-\section{Szállítás}
 
 \chapter{Alkalmazási lehetőségek, kitekintés}
 
