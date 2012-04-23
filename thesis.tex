@@ -1354,6 +1354,94 @@ Shell got {msg,{stock_exchange,#Ref<0.0.0.498>},
 ok
 \end{code}
 
+Ez a mechanizmus teszi lehetővé, hogy a modulokban ne kelljen a
+hibakezelést mindenhol leprogramozni. Ennek eredményeképpen a kód átláthatóbb
+marad, és kevesebb sorból is áll. Kevesebb kód, kevesebb hibalehetőség. 
+
+\section{Hibakeresés}
+Hiba, nem dokumentált kódrész azonban mindig marad. Többféle lehetőség közül
+választhat a fejlesztő, amikor hibát keres: 
+\subparagraph{Debug} A kód futtatása közben vizsgálhatja a fejlesztő a
+program-változókat. Hátránya, hogy ,,éles'' környezetben nem igazán
+alkalmazható, egy webszolgáltatást nem lehet fejlesztői környezetből futtatni.
+\subparagraph{Logging} Minden rendszer elengedhetetlen része a különböző
+részletezettségű naplózás. A naplófájlokban rögzíti a rendszer azokat az
+eseményeket, amelyek vagy audit vagy hibakeresések miatt érdekesek. Fentebb már
+volt szó a ZM program \texttt{zm\_em\_sys} \emph{event\_manager}-eréről, amely
+rendszer-eseményeket fogad. Az alkalmazásíró hozzáadhat akármennyi
+\emph{event\_handler}-t, amelyekkel például naplózhatja az eseményeket.
+\subparagraph{Trace}: az Erlang lehetőséget ad arra, hogy egy működő node
+működését, egészen pontosan függvényhívásait kívülről meg lehessen vizsgálni.
+Meg lehet adni, hogy melyik modul melyik függvényére vagyunk kíváncsiak, és meg
+lehet adni a paraméterek mintáját is, hogy csak azokat a hívásokat kapjuk meg,
+amik érdekelnek. Elkerülendő a több gigabájtos, áttekinthetetlen eredményt. 
+
+A trace nagy előnye, hogy ,,éles'' környezetben is használható, a szoftver
+megfigyelhető futás közben. Ez különösen akkor hasznos, amikor nem triviális
+vagy reprodukálható hibáról van szó, és nyomozni kell még azt is, hogy
+egyáltalán hol fordulhat elő hiba. A funkcionális programozás lehetővé teszi,
+hogy egy-egy függvény működését teljes egészében látni lehessen, hiszen minden
+inputot tartalmaznak a függvény paraméterei, nincs egyéb globális változó,
+aminek értéke befolyással lehetne a függvény működésére.
+
+Az Erlang beépített \emph{trace} moduljai: a \texttt{dbg} és a \texttt{ttb}.
+Előbbi tartalmazza a trace-hez szükséges függvényeket, utóbbi egy erre épülő
+eszköz elosztott (\emph{distributed}) rendszerek nyomozásához. A \texttt{ttb}
+segítségével egyszerűen lehet több node-ot figyelni, és az eredményül kapott
+log-okat egy gépen, időrendi sorrendben olvasni.
+
+A fenti példában szereplő, \texttt{handle\_info} függvény
+az alábbi módon trace-elhető (a példa együgyű, de látni, amit kell).
+
+\begin{code}{}{}
+(zm@notebook)21> stock_exchange ! {self(), ping}.
+{<0.214.0>,ping}
+(<0.149.0>) call zm_ch_delayed:handle_info(
+                 {<0.214.0>,ping},{state,stock_exchange})
+(<0.149.0>) returned from zm_ch_delayed:handle_info/2 -> 
+                 {noreply, {state, stock_exchange}}
+\end{code}
+
+Két sort ír ki a \texttt{dbg}. Az első a \emph{call}, hogy a függvény milyen
+paraméterrel lett meghívva, a második a \emph{returned}, amelyben az szerepel,
+milyen értéket adott vissza a függvény. A kiírást természetesen lehet fájlba is
+kérni, sőt grafikus felülettel rendelkező eszköz is van, amellyel nyomon lehet
+követni a függvényhívások, üzenetküldések láncolatát. További részletekre itt
+helyhiány miatt nem térünk ki.
+
+\section{Hibajavítás}
+Mint láttuk, a \emph{trace} intézménye azért nagyon fontos, mert az
+Erlang rendszerek egyes számú ismérve a folyamatos működés, az hibakeresést meg
+kell tudni oldani leállás nélkül -- az üzleti környezetben. Ehhez hasonlóan, ha
+megvan a hiba helye, a javítást is olymódon kell tudni eljuttatni a
+célrendszerre, hogy a folyamatos működés elve ne sérüljön. Az Erlang
+rendszereken az egyes modulokat futás közben is be lehet tölteni, a következő
+függvényhívás már az új kódot fogja futtatni. Javítsuk ki a fenti \emph{crash}
+hibát a \texttt{zm\_ch\_delayed} modulban!
+
+\begin{code}{erlang}{}
+handle_info(crash, State) ->
+  io:format("Won't crash.\n"),
+  {noreply, State};
+\end{code} 
+
+És a próba a shell-ben.
+
+\begin{code}{}{}
+(zm@notebook)26> l(zm_ch_delayed).               
+{module,zm_ch_delayed}
+(zm@notebook)27> stock_exchange ! crash.
+Won't crash.
+\end{code}
+
+Az \texttt{l(zm\_ch\_delayed)} parancs betölti a javított modult, és a
+következő üzenetet már hibamentesen tudja kezelni.
+
+Az Erlang ennél komplexebb futásközbeni szoftverfrissítést is tud kezelni,
+például futó szerverek állapotát lehet transzformálni új formátumba anélkül,
+hogy le kellene állni a folyamatnak. Ennek bemutatására itt helyhiány miatt nem
+térünk ki, annyit megjegyzünk, hogy az is a fenti mechanizmuson alapul.
+
 
 \subsection{Elosztott rendszer -- kell a redundancia}
 
@@ -1362,13 +1450,6 @@ ok
 \subsection{RESTful webservices}
 \subsection{HTML5 -- websockets}
 
-\chapter{Üzemeltetés, karbantartás}
-\section{Naplózás}
-Event manager, event handler.
-\section{Hibakeresés}
-Trace.
-\section{Hibajavítás}
-Upgrade.
 
 \chapter{Alkalmazási lehetőségek, kitekintés}
 
