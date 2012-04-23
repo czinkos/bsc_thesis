@@ -1,5 +1,5 @@
 \documentclass[12pt, a4paper, oneside]{book}
-\usepackage[left=3.5cm, top=2.5cm, right=2.5cm, bottom=2.5cm]{geometry}
+\usepackage[left=3.0cm, top=3.0cm, right=2.5cm, bottom=3.0cm]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[english,hungarian]{babel}
@@ -1096,7 +1096,7 @@ saját csatorna-implementációit (\emph{gen\_server}-ként). Így az üzenetkü
 szolgáltatás egyszerűen beilleszthető például egy webes szolgáltatásba,
 használatához csak a csatornákat kell implementálni.
 
-\subsection{Felépítés}
+\section{Felépítés}
 A ZM szerver felépítése az OTP alapelveknek felel meg, az egyes feladatokat
 önálló processek végzik, a processek egy hierarchiát alkotnak, ahol
 supervisor-ok felügyelik az alattuk futó folyamatokat. Az alábbi ábrán néven
@@ -1205,7 +1205,7 @@ zm_channel:subscribe(stock_exchange, self(), [{delay, 15}]).
 csatorna. De mi történik, ha hiba van? Hol a hibakezelés a fenti
 \texttt{handle\_cast} függvényből?
 
-\subsection{Hibatűrés}
+\section{Hibatűrés}
 Az Erlang fejlesztési gyakorlatra nem jellemző a defenzív -- hibavizsgálattól
 függő elágazások a kódban -- programozás. Az ajánlott módszer az, hogy a
 függvényekben feltételezzük, hogy az input adatok helyesek, és nem írjuk körül
@@ -1551,8 +1551,11 @@ csatornákat, hanem a külvilág is. Kapcsoljuk rá a böngésző előtt ülő
 felhasználókat a tőzsdéről érkező kereskedési adatokra!
 
 \section{Web interfész}
+Valami
+
 \includegraphics[clip=true, trim= 0 18cm 0 1cm]{fig/NodesWeb.pdf}
 
+Valami
 
 \subsection{RESTful webservices}
 \subsection{HTML5 -- websockets}
