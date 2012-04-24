@@ -414,7 +414,10 @@ node-ok számát egy hálózaton belül, bizonyos szám felett már túl nagy te
 jelent a node-ok egymás közti adminisztrációs kommunikációja. Szerencsére node-ot lehet
 rejtett üzemmódban is indítani, így nem jelenik meg a többi node listáján.
 
+\begin{figure}
+\caption{Erlang klaszter}
 \includegraphics[clip=true, trim= 0 20cm 0 3cm]{fig/Nodes.pdf}
+\end{figure}
 
 Erlang hálózatok belső, biztonságos környezetben használatosak, a klaszteren
 (\emph{cluster}) kívüli világgal, az interneten keresztül, valamelyik IP alapú
@@ -1139,7 +1142,11 @@ A ZM szerver felépítése az OTP alapelveknek felel meg, az egyes feladatokat
 önálló processek végzik, a processek egy hierarchiát alkotnak, ahol
 supervisor-ok felügyelik az alattuk futó folyamatokat. Az alábbi ábrán néven
 nevezzük az egyes elemeket.
+
+\begin{figure}
+\caption{A ZM alkalmazás process-hierarchiája}
 \includegraphics[clip=true, trim= 0 18cm 0 1cm]{fig/ZmSup.pdf}
+\end{figure}
 
 \subparagraph{zm\_sup} A gyökere a process-fának. Ez a supervisor kezeli az
 alábbi három folyamatot. Újraindítási stratégiája: \emph{one\_for\_one}, ami
@@ -1599,7 +1606,10 @@ Az alábbi sematikus ábrán látható, hogy a tőzsdei kereskedési adatok egy 
 több gépre érkeznek, és a felhasználók -- \emph{websocket} protokollon
 keresztül -- egy vagy több gépre csatlakoznak.
 
+\begin{figure}
+\caption{A tickerline szolgáltatás sematikus képe}
 \includegraphics[clip=true, trim= 0 18cm 0 1cm]{fig/NodesWeb.pdf}
+\end{figure}
 
 A több node használata egyrészt redundanciát biztosít, másrészt nagyszámú
 felhasználó esetén lehetőséget ad a terhelés megosztására. Ahhoz, hogy a
@@ -1732,9 +1742,12 @@ A böngészőben az alábbi Javascript kód kezeli a websocket kapcsolatot.
   }
 \end{code}
 
-Az alábbi képernyőképen látható az eredmény a böngészőben.\\
+Az alábbi képernyőképen látható az eredmény a böngészőben.
 
+\begin{figure}
+\caption{Működés közben}
 \includegraphics[scale=0.33]{fig/Browser.png}
+\end{figure}
 
 Ezzel elkészült a szerver, amely a tőzsdéről érkező kereskedési adatokat a
 beállított késleltetéssel vagy \emph{real-time} szolgáltatja a böngésző előtt
