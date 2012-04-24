@@ -1551,18 +1551,53 @@ csatornákat, hanem a külvilág is. Kapcsoljuk rá a böngésző előtt ülő
 felhasználókat a tőzsdéről érkező kereskedési adatokra!
 
 \section{Web interfész}
-Valami
+Az alábbi sematikus ábrán látható, hogy a tőzsdei kereskedési adatok egy vagy
+több gépre érkeznek, és a felhasználók -- \emph{websocket} protokollon
+keresztül -- egy vagy több gépre csatlakoznak.
 
 \includegraphics[clip=true, trim= 0 18cm 0 1cm]{fig/NodesWeb.pdf}
 
-Valami
+A több node használata egyrészt redundanciát biztosít, másrészt nagyszámú
+felhasználó esetén lehetőséget ad a terhelés megosztására. Ahhoz, hogy a
+terhelésmegosztás egyszerű feladat legyen, a rendszer tervezésénél gondoskodni
+kell arról, hogy két kérés-válasz (\emph{request-response}) forduló között ne
+legyen semmilyen függőség (\emph{stateless}). Van olyan megoldás, hogy adott IP
+címről érkező kéréseket mindig ugyanarra a gépre irányítja (\emph{sticky
+session}, így csak egy gépen kell kezelni a felhasználó szerveroldali
+,,állapotait''. Ez a megoldás esetünkben nem kielégítő, nem oldható meg a
+szerverek közti egyenletes elosztás, ráadásul, ha a gép, amihez a felhasználó
+éppen hozzá van rendelve, elromlik, a felhasználónak másik gépen újra be kell
+lépnie, stb.
 
-\subsection{RESTful webservices}
-\subsection{HTML5 -- websockets}
+A terhelésmegosztás nem része a rendszerünknek, azzal a feltételezéssel élünk,
+hogy egy egyszerű \emph{DNS load balancer} végzi ezt a feladatot úgy, hogy
+minden újabb kérést a soron következő node-nak továbbít (\emph{round robin}). 
+
+Az ennek megfelelő felépítést REST architektúrának hívják. A REST:
+\emph{Representational State Transfer}. A szerver a szolgáltatott
+\emph{resource}-oknak különböző reprezentációit (\emph{representation})
+küldi a kliensnek, a kérés tartalmaz minden információt, ami a válaszadáshoz
+szükséges. A szerver nem tárol session-ben semmilyen állapotot a klienssel
+kapcsolatban, így mindegy, hogy a soron következő kérések egyazon vagy más és
+más szerverre érkeznek be.
+
+A HTTP protokoll \emph{szinkron protokoll}, a kliens által kezdeményezett
+kapcsolaton keresztül kommunikál a szerver (választ ad), a szerver nem tud
+kérés nélkül adatot küldeni a kliensnek. Ennek megoldására hozták (hozzák --
+még folyamatban van a specifikálás) létre a HTTP protokollra épülő
+\emph{websocket} protokollt\footnote{A websocket előtt is készült megoldás a
+probléma áthidalására: a Comet. A dolgozat bemutató programjában a websocketre
+egyszerűsége miatt esett a választás}.  A websocket \emph{duplex protokoll},
+mindkét irányba lehet adatot küldeni, ez lehetővé teszi, hogy a tőzsdei
+információs alkalmazásunk a felhasználóknak azonnal kiküldje az adatokat
+(\emph{push}), nem kell a böngészőnek időközönként lekérdeznie, van-e adat
+(\emph{polling}).
+
 
 \chapter{Összegzés}
 
 \appendix
+
 
 
 \begin{thebibliography}{9}
