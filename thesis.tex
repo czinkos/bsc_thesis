@@ -1550,7 +1550,7 @@ felépítésig, már csak az hiányzik, hogy ne csak a shell process használja 
 csatornákat, hanem a külvilág is. Kapcsoljuk rá a böngésző előtt ülő
 felhasználókat a tőzsdéről érkező kereskedési adatokra!
 
-\section{Web interfész}
+\section{TL -- Web interfész}
 Az alábbi sematikus ábrán látható, hogy a tőzsdei kereskedési adatok egy vagy
 több gépre érkeznek, és a felhasználók -- \emph{websocket} protokollon
 keresztül -- egy vagy több gépre csatlakoznak.
@@ -1592,6 +1592,63 @@ mindkét irányba lehet adatot küldeni, ez lehetővé teszi, hogy a tőzsdei
 információs alkalmazásunk a felhasználóknak azonnal kiküldje az adatokat
 (\emph{push}), nem kell a böngészőnek időközönként lekérdeznie, van-e adat
 (\emph{polling}).
+
+A fenti ZM-től különválasztva, az önálló TL (TickerLine) alkalmazásban 
+implementáljuk a websocket interfészt. A TL előfeltételei között szerepel, hogy
+a ZM már fusson a node-on, hiszen a webalkalmazás mindössze annyiból áll, hogy
+kapcsolatot biztosít a ZM és a böngésző között.
+
+A példaprogramhoz a Cowboy HTTP szervert választottuk, mert a megismert OTP
+könyvtárra épül, és tudja kezelni a websocket protokollt. A Cowboy saját
+behaviour-t definiál: 
+
+\begin{code}{erlang}{}
+-module(tl_web_handler).
+-behaviour(cowboy_http_handler).
+-behaviour(cowboy_http_websocket_handler).
+\end{code}
+
+A behaviour-ök meghatározzák a callback függvényeket, amelyeket implementálni
+kell. Esetünkben van egy \texttt{handle} függvény a HTTP request-ek
+kezeléséhez, és van három websocket-et kezelő függvény, az
+\texttt{websocket\_init}, a \texttt{websocket\_handle} és a
+\texttt{websocket\_info}.
+
+Induláskor, tehát akkor, amikor a kliens böngészője websocket kapcsolatot
+kezdeményez, a process feliratkozik a \texttt{stick\_exchange} csatornára, 15
+perces késleltetéssel (ennek mértékét lehetne például felhasználói előfizetés
+alapján állítani).
+
+\begin{code}{erlang}{}
+websocket_init(_Any, Req, []) ->
+  zm_channel:subscribe(stock_exchange, self(), [{delay, 15}]),
+  Req2 = cowboy_http_req:compact(Req),
+  {ok, Req2, undefined, hibernate}.
+\end{code}
+
+Amikor a kliens küld üzenetet a szervernek, akkor a process ezt a gen\_server
+behaviour-höz hasonló módon kapja meg. A függvény visszatérési értékében
+megadott választ megkapja a böngésző.
+
+\begin{code}{erlang}{}
+websocket_handle({text, Msg}, Req, State) ->
+  {reply, {text, << "You said: ", Msg/binary >>}, Req, State, hibernate};
+\end{code}
+
+A szerveren, a feliratkozás eredményeként érkező üzenetek továbbítása a
+felhasználó felé:
+
+\begin{code}{erlang}{}
+websocket_info({msg, {_ChannelId, _SubscriptionRef}, 
+               {Timestamp, {Share, Price,Count}}}, Req, State) ->
+  T = io_lib:format("~p: sold ~p pieces of ~p at \$~p",
+                          [calendar:now_to_local_time(Timestamp), 
+                           Count, Share, Price]),
+  {reply, {text, list_to_binary(T)}, Req, State, hibernate};
+\end{code}
+
+Amikor a kliens zárja a kapcsolatot, a process leáll, és a
+\texttt{zm\_sub\_mon} folyamat gondoskodik a leiratkozásról.
 
 
 \chapter{Összegzés}
