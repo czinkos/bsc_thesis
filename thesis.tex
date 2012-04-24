@@ -85,13 +85,13 @@ eszközök, telefonrendszerek programozására. A magas telekom elvárások
 tükröződnek az Erlangban fejlesztett rendszerek architektúrájában,
 amely az Open Telecom Platform szoftverkönyvtárban ölt testet. A dolgozat
 bemutatja az Erlang programozási nyelvet, a fejlesztési elveket és
-alkalmazási lehetőségeit a webes technológiára épülő alkalmazások területén.
+alkalmazási lehetőségét a webes technológiára épülő alkalmazások területén.
 \end{abstract}
 
 \newpage
 \pagestyle{empty}
 \vspace*{\fill} 
-\hfill \emph{Mindenkinek, aki szereti}
+\hfill \emph{anyukámnak}
 \vspace*{\fill} 
 \newpage
 
@@ -133,9 +133,9 @@ szembesüljenek azzal, hogy kihúzták alóluk a talajt. Nem emberbaráti, hanem
 
 A weben a sikerhez elengedhetetlen a folyamatos és megbízható szolgáltatás,
 nagyon alacsony az ingerküszöb, ha egy oldal betöltődése tovább tart mint 4
-másodperc, már odébb is állt a felhasználó \citep{AkamaiReport}.  Ha túl
-sokszor kap hibaüzenetet -- amitől jobb esetben ingerült lesz, rosszabb esetben
-halálra rémül, hátha ő rontott el valamit --, keres mást. Éppen ezért nagyon
+másodperc, már odébb is állt a felhasználó.  Ha túl sokszor kap hibaüzenetet --
+amitől jobb esetben ingerült lesz, rosszabb esetben halálra rémül, hátha ő
+rontott el valamit --, keres mást \citep{AkamaiReport}.  Éppen ezért nagyon
 fontos, hogy olyan rendszert építsünk, amely 
 
 \begin{enumerate} 
@@ -168,19 +168,21 @@ alkalmas erre a feladatra, ez a dolgozat az Erlang programozási nyelvet és a
 hozzá kapcsolódó Open Telecom Platform-ot (OTP) mutatja be. Az Erlang egy
 funkcionális programozási nyelv, amelyet az Ericsson fejlesztett ki mintegy 20
 évvel ezelőtt telefonrendszerek, szoftveres kapcsolóközpontok programozásához,
-a telekommunikációs iparban szokásos rendkívül magas elvárásoknak megfelelően. 
+a telekommunikációs iparban szokásos rendkívül magas elvárásoknak megfelelően
+\citep{ArmstrongBook}. 
 
 Az Erlang megalkotásánál az elsődleges cél magas rendelkezésre állású
 (\emph{highly available}), hibatűrő (\emph{fault tolerant}) redundáns
 rendszerek építése volt. Ez az, amire az Erlang igazán alkalmas, ez az a
 terület, ahol az Erlangnak évtizedes múltja van: akár 99,999\%-os
 rendelkezésre állás biztosításában. Az hozzávetőleg 5 perc kiesés
-évente \citep{WikipediaNines}.
+évente. Az Ericsson AXD nevű terméke ennél magasabb rendelkezésre állást is
+elért: 99.9999999\%-ot \citep{CesariniBook}.
 
 1998-ban open source-szá vált a nyelv és a platformot adó
 szoftverkönyvtárak, azóta bárki használhatja bármilyen feladatra, számos
 önkéntes és cég teszi be a közösbe a maga alkalmazását: HTTP szervert, NoSQL
-adatbáziskezelőt.
+adatbáziskezelőt, szakdolgozatot.
 
 \newpage
 
@@ -200,7 +202,8 @@ elkövetni). Azt is figyelembe kellett venni, hogy a magas
 rendelkezésre állás megkövetelte redundáns architektúra párhuzamos programozást
 igényel, nem egy processzoron kell futni, hanem többön, sőt több gépen. Az
 Erlang egyik megalkotója, Joe Armstrong, az itt leírt elvekre, módszerekre a
-\emph{concurrency-oriented programming} kifejezést használta.
+\emph{concurrency-oriented programming} kifejezést használta
+\citep{ArsmtrongBook}.
 
 Az Erlang lényegében egy magas szintű nyelv konkurens rendszerek
 fejlesztéséhez. A párhuzamos programozás komplex feladatok esetében sokkal
@@ -232,7 +235,7 @@ A széles körben elterjedt imperatív nyelvekben (Java, C) az állapot
 változtatására szolgáló, a vezérlést végző nyelvi elemek egymásutáni
 használatával lehet leírni a működés ,,hogyanját''. Változók értékadása,
 feltételes elágazások, ciklusok adják a működés logikáját, mit mi után milyen
-feltételek teljesülése esetén kell végrehajtani. Például a Fibonacci-sor Java
+feltételek teljesülése esetén kell végrehajtani \citep{Hudak}. Például a Fibonacci-sor Java
 megvalósítása:
 
 \begin{code}{java}{Fibonacci -- Java}
@@ -296,19 +299,19 @@ illetve \texttt{Paratlan} függvények változók (amik nem igazi változók, cs
 egyszer kaphatnak értéket), amelyek értéke egy-egy névtelen függvény
 (\emph{$\lambda$ function}).
 
-Az Erlang nem tisztán funkcionális környezet, lévén ipari alkalmazásra
-készült, lehet írni olyan függvényeket, amelyek nem mellékhatás mentesek,
-például fájl- és adatbázis műveletek. A funkcionális programozás alapelvei
-azonban jelen vannak, lehet tisztán funkcionális alkalmazást is írni, és a
-fentebb ismertetett elvek maradéktalanul alkalmazhatók. Nem léteznek globális
-változók, amelyek értékét több függvényből is módosítani lehetne, minden
-változó (pontosabban értékadás egy névhez) csak az adott függvényen belül
-értelmezett, a szükséges állapotot a függvény argumentumai közt explicit kell
-megadni, és a visszatérési értékbe is betenni. A párhuzamos programozást ez
-nagyban megkönnyíti: nem kell attól félni, hogy egy értéket egy másik folyamat
-vagy függvényhívás felülír, mindig minden ,,kézben van''. Hogyan lehet így
-bármi használhatót írni? Hogyan lehet egy komplex rendszert felépíteni,
-amelynek egyes moduljai inputokat várnak más moduloktól?
+Az Erlang nem tisztán funkcionális környezet, lévén ipari alkalmazásra készült,
+lehet írni olyan függvényeket, amelyek nem mellékhatás mentesek, például fájl-
+és adatbázis műveletek. A funkcionális programozás alapelvei azonban jelen
+vannak, lehet tisztán funkcionális alkalmazást is írni, és a fentebb
+ismertetett elvek maradéktalanul alkalmazhatók. Nem léteznek globális változók,
+amelyek értékét több függvényből is módosítani lehetne, minden változó
+(pontosabban értékadás egy névhez) csak az adott függvényen belül értelmezett,
+a szükséges állapotot a függvény argumentumai közt explicit kell megadni, és a
+visszatérési értékbe is betenni. A párhuzamos programozást ez nagyban
+megkönnyíti: nem kell attól félni, hogy egy értéket egy másik folyamat vagy
+függvényhívás felülír, mindig minden ,,kézben van'' \citep{ArmstrongThesis}.
+Hogyan lehet így bármi használhatót írni? Hogyan lehet egy komplex rendszert
+felépíteni, amelynek egyes moduljai inputokat várnak más moduloktól?
 
 Az egyes folyamatok (\emph{process}) üzeneteket küldenek egymásnak, amelyek
 egy-egy másolatát (nem csak egy referenciát!) kapja meg a címzett fél, az
@@ -333,7 +336,7 @@ cselekvő halálát, diszfunkcionalitását. A világ konkurens, az aktorok egym
 egy időben működnek, kommunikálnak, megfelelő protokoll szerint megértik
 egymás üzeneteit, esetleg -- megállapodás alapján -- figyelnek egymásra. Ha
 egyikkel történik valami, a másik észreveszi, és ha tud, csinál valami
-hasznosat.
+hasznosat \citep{Hewitt}.
 
 Például egy telefonbeszélgetés során két aktor üzeneteket vált egymással
 (hangcsatornán keresztül):
@@ -382,7 +385,7 @@ aszinkron üzenetküldéssel kommunikálnak egymással, az üzenetek másolata k
 címzett birtokába, a feladó ,,eredeti példánya'' megmarad. A valós életben sem
 törlődik az agyunkból semmi, csak mert elmondjuk másnak (kivéve esetleg az
 egyetemi vizsgákat). Ez a másolás teszi lehetővé a gépek közti transzparens
-kommunikációt.
+kommunikációt \citep{CesariniBook}.
 
 \section{Elosztott (\emph{distributed}) Erlang}
 Egy gép nem gép, ha magas rendelkezésre állást kell biztosítani. Hiába van
@@ -418,7 +421,7 @@ Erlang hálózatok belső, biztonságos környezetben használatosak, a klaszter
 protokollal -- TCP, UDP, SCTP -- lehet kommunikálni. Egy webszolgáltatás
 esetében például a belső hálózat Erlang node-okból áll, a külvilág -- a
 böngésző -- pedig HTTP protokollon keresztül éri el a HTTP szervert futtató
-gépet. 
+gépet \citep{ArmstrongThesis}. 
 
 Elosztott rendszereknél bizonyos méret fölött, különösen földrajzilag is
 diverzifikált rendszereknél a CAP-elméletnek megfelelően a következő háromból
@@ -450,9 +453,9 @@ az épületben, akkor nem lesz elérhető semmi. Földrajzilag is el kell külö
 az egyes részeket: ekkor az a probléma, hogy meg kell oldani a konzisztens
 adatmódosítást úgy, hogy közben az elérhetőség (elfogadható válaszidő) ne
 sérüljön. A CAP-elmélet ezt állítja, valamelyik feltétel a háromból
-mindenképpen sérül.
+mindenképpen sérül \citep{CAP}.
 
-Az ebben a dolgozatban a .. fejezetben bemutatott alkalmazás esetében az
+Az ebben a dolgozatban a 4. fejezetben bemutatott alkalmazás esetében az
 elérhetőségről (\emph{availability}) mondunk le. A rendszer egy Erlang
 node-okból álló klasztert alkot egy biztonságos helyi hálózaton belül,
 földrajzilag nincs elkülönítve egyetlen része sem (ez az irány -- nevezetesen a
@@ -830,7 +833,8 @@ fennhatósága alá tartozik, nem külön operációs rendszer folyamat, indít�
 igényel sok erőforrást, egy-egy rendszeren belül akár többszázezer process-t
 is lehet indítani. Például egy HTTP szerver megvalósítása lehet az, hogy minden
 kapcsolathoz tartozik egy önálló webszerver process. Ha ebben valami hiba
-történik (pl. 0-val osztás), akkor ez a process leáll, a többi működik tovább.
+történik (pl. 0-val osztás), akkor ez a process leáll, a többi működik tovább
+\citep{CesariniBook}.
 
 Process-ek programozásához az eddigieken bemutatottakon túl mindössze három
 műveletre van szükség:
@@ -998,8 +1002,10 @@ feladatot végez, nem felügyel más process-eket. Az OTP az alábbi
 \begin{itemize}
 \item \emph{Generic server (gen\_server)}: általános szerver;
 \item \emph{Generic Finit State Machine (gen\_fsm)}: véges automata;
-\item \emph{Generic Event Manager (gen\_event)}: események, alarmok kezeléséhez.
+\item \emph{Generic Event Handler (gen\_event)}: események, alarmok kezeléséhez;
 \end{itemize}
+
+\citep{OTPInAction}.
 
 \newpage
 A fenti celsius-fahrenheit átváltó modul \emph{gen\_server} átirata:
@@ -1244,7 +1250,7 @@ függvényekben feltételezzük, hogy az input adatok helyesek, és nem írjuk k
 a lehetőségeket, ha valami mégsem lenne megfelelő. Egyetlen kivétel a
 felhasználó által megadott adatok bekérésére szolgáló függvények, ott
 elkerülhetetlen a vizsgálódás, hiszen ki kell tudni írni, mi a baj a megadott
-adatokkal.
+adatokkal \citep{ArmstrongThesis}.
 
 A hibákat a kódban nem kell kezelni, egyszerűen hagyni kell a process-t
 elbukni, és a supervisor-ra bízni a döntést, újraindítja-e a process-t vagy
@@ -1422,12 +1428,18 @@ Az Erlang beépített \emph{trace} moduljai: a \texttt{dbg} és a \texttt{ttb}.
 Előbbi tartalmazza a trace-hez szükséges függvényeket, utóbbi egy erre épülő
 eszköz elosztott (\emph{distributed}) rendszerek nyomozásához. A \texttt{ttb}
 segítségével egyszerűen lehet több node-ot figyelni, és az eredményül kapott
-log-okat egy gépen, időrendi sorrendben olvasni.
+log-okat egy gépen, időrendi sorrendben olvasni \citep{ErlangDoc}.
 
 A fenti példában szereplő, \texttt{handle\_info} függvény
 az alábbi módon trace-elhető (a példa együgyű, de látni, amit kell).
 
 \begin{code}{}{}
+(zm@notebook)20> dbg:start(),
+(zm@notebook)20> dbg:tracer(),
+(zm@notebook)20> dbg:p(all, c),
+(zm@notebook)20> dbg:tpl(zm_ch_delayed, handle_info, '_', 
+                  [{'_', [], [{return_trace}]}]).
+
 (zm@notebook)21> stock_exchange ! {self(), ping}.
 {<0.214.0>,ping}
 (<0.149.0>) call zm_ch_delayed:handle_info(
@@ -1474,8 +1486,8 @@ következő üzenetet már hibamentesen tudja kezelni.
 Az Erlang ennél komplexebb futásközbeni szoftverfrissítést is tud kezelni,
 például futó szerverek állapotát lehet transzformálni új formátumba anélkül,
 hogy le kellene állni a folyamatnak. Ennek bemutatására itt helyhiány miatt nem
-térünk ki, annyit megjegyzünk, hogy az is a fenti mechanizmuson alapul.
-
+térünk ki, annyit megjegyzünk, hogy az is a fenti mechanizmuson alapul
+\citep{OTPInAction}.
 
 \section{Elosztott rendszer -- egy gép nem elég}
 A fentiekben vázolt ZM szerver elosztott rendszerként való működését az alábbi
@@ -1611,11 +1623,11 @@ Az ennek megfelelő felépítést REST architektúrának hívják. A REST:
 küldi a kliensnek, a kérés tartalmaz minden információt, ami a válaszadáshoz
 szükséges. A szerver nem tárol session-ben semmilyen állapotot a klienssel
 kapcsolatban, így mindegy, hogy a soron következő kérések egyazon vagy más és
-más szerverre érkeznek be.
+más szerverre érkeznek be \citep{Fielding}.
 
 A HTTP protokoll \emph{szinkron protokoll}, a kliens által kezdeményezett
 kapcsolaton keresztül kommunikál a szerver (választ ad), a szerver nem tud
-kérés nélkül adatot küldeni a kliensnek. Ennek megoldására hozták (hozzák --
+kérés nélkül adatot küldeni a kliensnek \citep{HTTPSpec}. Ennek megoldására hozták (hozzák --
 még folyamatban van a specifikálás) létre a HTTP protokollra épülő
 \emph{websocket} protokollt\footnote{A websocket előtt is készült megoldás a
 probléma áthidalására: a Comet. A dolgozat bemutató programjában a websocketre
@@ -1623,7 +1635,7 @@ egyszerűsége miatt esett a választás}.  A websocket \emph{duplex protokoll},
 mindkét irányba lehet adatot küldeni, ez lehetővé teszi, hogy a tőzsdei
 információs alkalmazásunk a felhasználóknak azonnal kiküldje az adatokat
 (\emph{push}), nem kell a böngészőnek időközönként lekérdeznie, van-e adat
-(\emph{polling}).
+(\emph{polling}) \citep{WebsocketSpec}.
 
 A fenti ZM-től különválasztva, az önálló TL (TickerLine) alkalmazásban 
 implementáljuk a websocket interfészt. A TL előfeltételei között szerepel, hogy
@@ -1873,6 +1885,12 @@ Architectures}. PhD. thesis, University of California, Irvine. Web:
 {\scshape Fielding, R. ed.} (1999): \emph{Hypertext Transfer Protocol --
 HTTP/1.1}. Web: \url{http://www.w3.org/Protocols/rfc2616/rfc2616.html},
 letöltés ideje: 2012-04-23.
+
+\harvarditem[Gilbert -- Lynch]{}{2003}{CAP}
+{\scshape Gilbert, S. -- Lynch, N.} (2003): \emph{Brewer’s Conjecture and the
+Feasibility of Consistent, Available, Partition-Tolerant Web Services}. Web:
+\url{http://lpd.epfl.ch/sgilbert/pubs/BrewersConjecture-SigAct.pdf}, letöltés
+ideje: 2012-04-23.
 
 \harvarditem[Hewitt]{}{2011}{Hewitt}
 {\scshape Hewitt, C.} (2011): \emph{Actor Model of Computation: Scalable Robust
