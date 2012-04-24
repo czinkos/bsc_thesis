@@ -42,6 +42,38 @@ framexleftmargin=0.5cm, framexrightmargin=0.5cm}}
 \title{Erlang/OTP: magas rendelkezésre állású, elosztott rendszerek fejlesztése}
 \date{2012-04-28}
 
+\renewcommand{\maketitle}{
+\begin{titlepage}
+\noindent Budapesti Corvinus Egyetem\\
+Gazdálkodástudományi Kar\\
+Levelező Tagozat\\
+
+\vspace{6cm}
+
+\begin{center}
+\Large{Erlang/OTP}\\
+\vspace{0.3cm}
+\large{Magas rendelkezésre állású, elosztott rendszerek
+fejlesztése}
+\end{center}
+
+\vfill
+
+\begin{flushright}
+Készítette: Czinkos Zsolt\\
+Gazdaságinformatikus (BSc) Szak\\
+2012\\
+\end{flushright}
+
+\vspace{0.5cm}
+
+\begin{center}
+Konzulens: dr. Fodor Szabina
+\end{center}
+
+\end{titlepage}
+}
+
 \begin{document}
 \maketitle
 
@@ -148,7 +180,7 @@ rendelkezésre állás biztosításában. Az hozzávetőleg 5 perc kiesés
 1998-ban open source-szá vált a nyelv és a platformot adó
 szoftverkönyvtárak, azóta bárki használhatja bármilyen feladatra, számos
 önkéntes és cég teszi be a közösbe a maga alkalmazását: HTTP szervert, NoSQL
-adatbáziskezelőt, stb.
+adatbáziskezelőt.
 
 \newpage
 
@@ -435,7 +467,7 @@ egy átlagos magyar vállalkozás vagy akár egyetemi tanulmányi rendszer
 követelményeit. Biztosítani képes a folyamatos működést és az elfogadható
 válaszidőt (\emph{soft-realtime}).
 
-\section{Az Erlang programozási nyelv alapjai} 
+\chapter{Az Erlang programozási nyelv alapjai} 
 Az ebben a részben bemutatásra kerülő Erlang szintaxis nem fedi le a teljes
 nyelvet, a cél, hogy a következőkben bemutatott alkalmazás felépítése, a
 modulok érthetőek legyenek.
@@ -459,7 +491,7 @@ Eshell V5.7.4  (abort with ^G)
 (a@notebook)2>
 \end{code}
 
-\subsection{Típusok} Az Erlang dinamikus típusos nyelv (\emph{dynamic typed
+\section{Típusok} Az Erlang dinamikus típusos nyelv (\emph{dynamic typed
 programming language}).  A statikus típusos nyelvekkel (pl. Java) szemben a
 típusellenőrzés futásidőben (\emph{runtime}) történik, nem fordításkor, nem a
 változóknak van típusa, hanem az értékeknek.  Például egy függvény
@@ -533,7 +565,7 @@ terulet(S) ->
 "kakukk" kifejezés ekvivalens a \texttt{[107,97,107,117,107,107]} és 
 \texttt{[\$k,\$a,\$k,\$u,\$k,\$k]} listákkal.
 
-\subsection{Mintaillesztés (\emph{pattern matching})}
+\section{Mintaillesztés (\emph{pattern matching})}
 A mintaillesztés nagyon fontos fegyver az Erlang arzenálban. Mintaillesztéssel
 lehet egy változónak értéket adni, komplex adatszerkezetből adatot kinyerni,
 a vezérlést irányítani. A mintaillesztés általános formája:
@@ -663,7 +695,7 @@ is működni fognak, ha a mezőszám megváltozik, míg tuple-nél az összes he
 módosítani kellene a kódot, ahol mintaillesztésben szerepel). A 6. utasításnál
 látszik, hogy a tuple szintaxisú minta is megfelel a jobboldali rekordnak.
 
-\subsection{Függvény definiálása} A mintaillesztés a függvények definiálásánál
+\section{Függvény definiálása} A mintaillesztés a függvények definiálásánál
 is nagyon hasznos, a függvény argumentumainak mintát megadva lehet a komplexebb
 paraméterből változóknak értéket adni, illetve külön állításokat
 (\emph{function clause}) megfogalmazni a függvényhez, milyen input esetén mit
@@ -755,7 +787,7 @@ egy rövid kis listán.
 \noindent A \texttt{list:insert} kifejezés jelentése: a \texttt{list} modulban
 lévő \texttt{insert} függvény. 
 
-\subsection{Modulok} A modulok szolgálnak logikailag összetartozó függvények
+\section{Modulok} A modulok szolgálnak logikailag összetartozó függvények
 csoportosítására. A modulok nem alkotnak hierarchiát (\emph{flat namespace}),
 elnevezéssel lehet megoldani a szükséges tagolást. A modulokban az alábbi
 részek szerepelhetnek:
@@ -790,7 +822,7 @@ A fenti modul az egy argumentummal rendelkező \texttt{convert} függvényt
 exportálja, csak ezt lehet meghívni más modulokból. A modul neve \texttt{temp},
 kötelező ugyanilyen nevű fájlba tenni.
 
-\subsection{Konkurens programozás}
+\section{Konkurens programozás}
 A fentebb röviden bemutatott aktor modellen alapul a párhuzamos
 programozás az Erlangban. Az aktorok \emph{process}-ek, amelyek tudnak üzenetet
 fogadni (\emph{receive}) és küldeni (\emph{send}). A process az Erlang VM
