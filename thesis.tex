@@ -1632,7 +1632,8 @@ megadott választ megkapja a böngésző.
 
 \begin{code}{erlang}{}
 websocket_handle({text, Msg}, Req, State) ->
-  {reply, {text, << "You said: ", Msg/binary >>}, Req, State, hibernate};
+  {reply, {text, << "You said: ", Msg/binary >>}, 
+           Req, State, hibernate};
 \end{code}
 
 A szerveren, a feliratkozás eredményeként érkező üzenetek továbbítása a
@@ -1640,10 +1641,11 @@ felhasználó felé:
 
 \begin{code}{erlang}{}
 websocket_info({msg, {_ChannelId, _SubscriptionRef}, 
-               {Timestamp, {Share, Price,Count}}}, Req, State) ->
+               {Timestamp, {Share, Price,Count}}}, 
+                Req, State) ->
   T = io_lib:format("~p: sold ~p pieces of ~p at \$~p",
-                          [calendar:now_to_local_time(Timestamp), 
-                           Count, Share, Price]),
+                [calendar:now_to_local_time(Timestamp), 
+                Count, Share, Price]),
   {reply, {text, list_to_binary(T)}, Req, State, hibernate};
 \end{code}
 
@@ -1667,7 +1669,8 @@ A böngészőben az alábbi Javascript kód kezeli a websocket kapcsolatot.
     WebSocket = MozWebSocket;
   }
   if ("WebSocket" in window) {
-    var ws = new WebSocket("ws://tickerline.zakk.hu:9006/websocket");
+    var ws = 
+      new WebSocket("ws://tickerline.zakk.hu:9006/websocket");
     ws.onopen = function() {
       addStatus("Websocket connected.");
       ws.send("kakukk");
@@ -1685,6 +1688,10 @@ A böngészőben az alábbi Javascript kód kezeli a websocket kapcsolatot.
   }
 \end{code}
 
+Az alábbi képernyőképen látható az eredmény a böngészőben.\\
+
+\includegraphics[scale=0.33]{fig/Browser.png}
+
 Ezzel elkészült a szerver, amely a tőzsdéről érkező kereskedési adatokat a
 beállított késleltetéssel vagy \emph{real-time} szolgáltatja a böngésző előtt
 ülő fehasználóknak. A szerver redundánsan működik, ha valamelyik gép
@@ -1692,6 +1699,7 @@ meghibásodik, a következő kérés egy másikra fut be, és onnan kapja továb
 adatokat (websocket esetében a fenti javascript \texttt{ws.onclose}
 függvényéven lehet kezelni a kapcsolatban fellépő hibákat -- új kapcsolatot
 létesíteni egy másik géppel).
+
 
 \chapter{Összegzés}
 
