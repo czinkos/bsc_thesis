@@ -22,7 +22,7 @@
 \definecolor{light-gray}{gray}{0.6}
 \lstnewenvironment{code}[2]
 {\lstset{basicstyle=\footnotesize, showstringspaces=false, emphstyle=\textbf,
-caption= #2,language= #1, frame=single, xleftmargin=1.5cm, xrightmargin=1.5cm,
+title= #2,language= #1, frame=single, xleftmargin=1.5cm, xrightmargin=1.5cm,
 rulecolor=\color{light-gray}, belowskip=0.75cm, aboveskip=0.5cm,
 framexleftmargin=0.5cm, framexrightmargin=0.5cm}}
 {}
@@ -1737,9 +1737,105 @@ létesíteni egy másik géppel).
 
 \appendix
 \chapter{A példaprogram elérhetősége}
-Mellékelt program.
-\chapter{Példák rekurzióra}
+A példaprogram két Erlang alkalmazásból áll: az elosztott üzenetküldő
+rendszerből (ZM) és az erre épülő webalkalmazásból (TL). Mindkét alkalmazás
+megtalálható a dolgozathoz mellékelt CD-n, és a \emph{github.com}-on is.
+\\
+\\
+\noindent ZM: \url{https://github.com/czinkos/zm}\\
+TL: \url{https://github.com/czinkos/tl}
+\\
+\\
+\noindent A programok indítása az alábbi paranccsal lehetséges (linux változat).
 
+\begin{code}{}{}
+\$ run_erl -daemon var/pipe var/log \
+    "erl -pa cowboy/ebin -pa zm/ebin -pa tl/ebin \
+     -mnesia dir '\"mnesia\"' -setcookie tl -sname tl"
+\end{code}
+
+A TL alkalmazáshoz le kell tölteni a Cowboy HTTP szervert:
+\url{https://github.com/extend/cowboy}.
+
+
+\chapter{Példák rekurzióra}
+\begin{code}{erlang}{Visszaadja a lista n. elemét.}
+nth(N, _) when N < 0; not(is_number(N)) ->
+  {badArg, "N must be >= 0"};
+nth(_, []) ->
+  {badArg, "out of index"};
+nth(0, [H|_]) ->
+  H;
+nth(N, [_H|T]) ->
+  nth(N - 1, T).
+\end{code}
+
+\begin{code}{erlang}{Elem beszúrása rendezett listába.}
+insert(I, []) ->
+  [I];
+insert(I, [H|[]]) ->
+  [H, I];
+insert(I, [H|T]) when I > H ->
+  [H | insert(I, T)];
+insert(I, [H|T]) ->
+  [I, H|T].
+\end{code}
+
+\begin{code}{erlang}{Lista rendezése a beszúrás függvénnyel.}
+insertion_sort([]) ->
+  [];
+insertion_sort([H|T]) ->
+  insert(H, insertion_sort(T)).
+\end{code}
+
+\begin{code}{erlang}{Lista egy részét adja vissza.}
+sublist([], _) ->
+  [];
+sublist(_, N) when N =< 0 ->
+  [];
+sublist([H|_], 1) ->
+  [H];
+sublist([H|T], N) ->
+  [H | sublist(T, N -1)].
+\end{code}
+
+\begin{code}{erlang}{Adott intervallum egész számait adja vissza.}
+seq(Low, High) when Low > High ->
+  {error, "High must be larger than Low"};
+seq(High, High) ->
+  [High];
+seq(Low, High) ->
+  [Low| seq(Low + 1, High)].
+\end{code}
+
+\begin{code}{erlang}{Lista másik lista után fűzése.}
+append(L1, L2) ->
+  append(L1, L2, []).
+append([],[], Res) -> reverse(Res);
+append([], [H|T], Res) ->
+  append([], T, [H|Res]);
+append([H|T], L2, Res) ->
+  append(T, L2, [H|Res]).
+\end{code}
+
+\begin{code}{erlang}{Lista visszafelé.}
+reverse(L) ->
+  reverse(L, []).
+reverse([], Res) ->
+  Res;
+reverse([H|T], Res) ->
+  reverse(T, [H | Res]).
+\end{code}
+
+\newpage
+\begin{code}{erlang}{Egymásba ágyazott listák kisimítása.}
+flatten(L) -> flatten(L, []).
+flatten([], Res) -> Res;
+flatten([H|T], Res) ->
+  flatten(H, flatten(T, Res));
+flatten(H, Res) ->
+  [H|Res].
+\end{code}
 
 \begin{thebibliography}{9}
 
