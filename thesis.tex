@@ -1615,7 +1615,7 @@ kezeléséhez, és van három websocket-et kezelő függvény, az
 \texttt{websocket\_info}.
 
 Induláskor, tehát akkor, amikor a kliens böngészője websocket kapcsolatot
-kezdeményez, a process feliratkozik a \texttt{stick\_exchange} csatornára, 15
+kezdeményez, a process feliratkozik a \texttt{stock\_exchange} csatornára, 15
 perces késleltetéssel (ennek mértékét lehetne például felhasználói előfizetés
 alapján állítani).
 
@@ -1649,6 +1649,44 @@ websocket_info({msg, {_ChannelId, _SubscriptionRef},
 
 Amikor a kliens zárja a kapcsolatot, a process leáll, és a
 \texttt{zm\_sub\_mon} folyamat gondoskodik a leiratkozásról.
+
+A szerver és a tőzsdei kereskedést adatait szimuláló process elindítása az
+Erlang shell-ben. A véletlenszám generátorral készült adatokat 10
+másodpercenként küldi a folyamat.
+
+\begin{code}{erlang}{}
+1> tl_app:start().
+2> stock_exchange:start().
+{ok,{interval,#Ref<0.0.0.22028>}}
+\end{code}
+
+A böngészőben az alábbi Javascript kód kezeli a websocket kapcsolatot.
+
+\begin{code}{}{}
+  if (\"MozWebSocket\" in window) {
+    WebSocket = MozWebSocket;
+  }
+  if (\"WebSocket\" in window) {
+    var ws = new WebSocket(\"ws://tickerline.zakk.hu:9006/websocket\");
+    ws.onopen = function() {
+      addStatus(\"Websocket connected.\");
+      ws.send(\"kakukk\");
+      addStatus(\"Testing connection...\");
+    };
+    ws.onmessage = function (evt) {
+      var msg = evt.data;
+      addStatus(\"Received from server: '\" + msg + \"'\");
+    };
+    ws.onclose = function() {
+      addStatus(\"Websocket closed.\");
+    };
+  } else {
+    addStatus(\"Your browser does not support websockets.\");
+  }
+\end{code}
+
+
+
 
 
 \chapter{Összegzés}
