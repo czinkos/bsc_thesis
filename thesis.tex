@@ -1663,31 +1663,35 @@ másodpercenként küldi a folyamat.
 A böngészőben az alábbi Javascript kód kezeli a websocket kapcsolatot.
 
 \begin{code}{}{}
-  if (\"MozWebSocket\" in window) {
+  if ("MozWebSocket" in window) {
     WebSocket = MozWebSocket;
   }
-  if (\"WebSocket\" in window) {
-    var ws = new WebSocket(\"ws://tickerline.zakk.hu:9006/websocket\");
+  if ("WebSocket" in window) {
+    var ws = new WebSocket("ws://tickerline.zakk.hu:9006/websocket");
     ws.onopen = function() {
-      addStatus(\"Websocket connected.\");
-      ws.send(\"kakukk\");
-      addStatus(\"Testing connection...\");
+      addStatus("Websocket connected.");
+      ws.send("kakukk");
+      addStatus("Testing connection...");
     };
     ws.onmessage = function (evt) {
       var msg = evt.data;
-      addStatus(\"Received from server: '\" + msg + \"'\");
+      addStatus("Received from server: " + msg);
     };
     ws.onclose = function() {
-      addStatus(\"Websocket closed.\");
+      addStatus("Websocket closed.");
     };
   } else {
-    addStatus(\"Your browser does not support websockets.\");
+    addStatus("Your browser does not support websockets.");
   }
 \end{code}
 
-
-
-
+Ezzel elkészült a szerver, amely a tőzsdéről érkező kereskedési adatokat a
+beállított késleltetéssel vagy \emph{real-time} szolgáltatja a böngésző előtt
+ülő fehasználóknak. A szerver redundánsan működik, ha valamelyik gép
+meghibásodik, a következő kérés egy másikra fut be, és onnan kapja tovább az
+adatokat (websocket esetében a fenti javascript \texttt{ws.onclose}
+függvényéven lehet kezelni a kapcsolatban fellépő hibákat -- új kapcsolatot
+létesíteni egy másik géppel).
 
 \chapter{Összegzés}
 
