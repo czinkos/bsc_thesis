@@ -1571,7 +1571,8 @@ Csatorna elindítása és a két shell feliratkozása:
   || (zm2@notebook)2> zm_channel:list().
   || [stock_exchange]
 
-(zm@notebook)6> zm_channel:subscribe(stock_exchange, self(), []).   
+(zm@notebook)6> zm_channel:subscribe(stock_exchange, 
+                                     self(), []).   
 #Ref<0.0.0.407>
   || (zm2@notebook)3> zm_channel:subscribe(stock_exchange, 
   ||                                       self(), []).
