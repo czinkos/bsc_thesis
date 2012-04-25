@@ -1759,6 +1759,50 @@ létesíteni egy másik géppel).
 Az alábbi képernyőképen látható az eredmény a böngészőben.
 
 \chapter{Összegzés}
+A dolgozatban végigvettük az Erlang nyelv alapjait, beleértve a szintaxist és
+a fejlesztési alapelveket, különös tekintettel a párhuzamos programozás
+mikéntjére. Az Erlang rendszerek magas rendelkezésre állása és skálázhatósága
+ugyanarról a tőről fakad: az egymástól függetlenül működő process-ek
+önállósága, a köztük lévő kommunikációt biztosító aszinkron üzenetküldési
+metódus (aktor modell) a funkcionális programozási elvekkel együttesen teszik
+lehetővé elosztott rendszerek fejlesztését. A nyelvet a kezdetektől erre a
+célra fejlesztették, az Erlang magas szintű nyelvként biztosítja a fejlesztő
+számára a fentiek egyszerű használatát. A nyelvi alapokra épül az Erlang
+kiforrott, számtalan üzleti projektben használt szoftverkönyvtára, az Open
+Telecom Platform (OTP). Az OTP a leggyakoribb programozási mintákat valósítja
+meg, és keretrendszert biztosít összetettebb, hibatűrő rendszerek építéséhez.
+Állatorvosi lóként megvizsgáltunk egy egyszerű -- tőzsdei kereskedési adatokat
+szolgáltató -- példaprogramot, amely az OTP infrastruktúrára épülve bizosítja a
+redundáns és \emph{soft real-time} működést a weben.
+
+A dolgozat terjedelmi korlátai miatt nem tudtunk kitérni minden alkalmazási
+lehetőségre. További vizsgálódás tárgya lehet a példaprogram világméretű
+előfizetői kör kiszolgálására alkalmas változatának kifejlesztése, annak
+bemutatása, hogyan lehet több ezer számítógépen rendszert működtetni. 
+Visszautalva a CAP-elméletre: ilyen méretű rendszernél, ha tartani akarjuk a
+megfelelő válaszidőt, az adat nem lesz minden időpillanatban konzisztens
+(\emph{eventual consistency}). 
+
+További alkalmazási terület lehet az adat- vagy szövegbányászat
+(például üzleti intelligencia rendszerekben). Egy egyedülálló gép kapacitásait
+meghaladó adatmennyiség feldolgozásához biztosíthat platformot egy párhuzamosan
+működő Erlang klaszter. Akár azért, mert a sok adat nem fér el egy helyen, akár
+azért, mert az feldolgozás idejét kell belátható tartamúra rövidíteni. Ennek
+megvalósításához akár a Google \emph{map-reduce} modelljét is lehet alkalmazni. A
+feladat partícionálása (map), majd az eredmény \emph{key-value} párok
+feldogozása (reduce) kézenfekvő feladat az Erlang process-intézményével.
+
+Érdekes feladat lenne időigényes gazdasági, statisztikai számítások
+megvalósítása például az egyetemi hálózaton. Minden egyes gépen el lehet
+indítani egy ,,üres'' Erlang node-ot, ami alapesetben nem végez semmilyen
+feladatot, nem terheli észrevehetően a processzort; a hallgató a gép előtt ülve
+észre sem veszi, hogy nem csak a passziánsz fut a gépen. Ezek az ,,üres''
+szerverek tetszés szerint munkára foghatók. Egy-egy, a standard üzenetküldési
+rendszeren keresztül kapott modul végezhet valamilyen számítást, amíg másik
+modult nem küld a működtető, vagy amíg el nem végzi a feladatát.  Ezzel a
+módszerrel viszonylag egyszerűen ki lehet használni az egyetemi
+hálózat gépeinek üres CPU ciklusait, egyetlen nagy klaszterént munkára fogva a
+gépeket időigényes feladatok elvégzéséhez.
 
 \appendix
 \chapter{A példaprogram elérhetősége}
