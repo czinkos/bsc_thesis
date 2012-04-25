@@ -1798,8 +1798,6 @@ nth(N, [_H|T]) ->
 \begin{code}{erlang}{Elem beszúrása rendezett listába.}
 insert(I, []) ->
   [I];
-insert(I, [H|[]]) ->
-  [H, I];
 insert(I, [H|T]) when I > H ->
   [H | insert(I, T)];
 insert(I, [H|T]) ->
@@ -1809,6 +1807,8 @@ insert(I, [H|T]) ->
 \begin{code}{erlang}{Lista rendezése a beszúrás függvénnyel.}
 insertion_sort([]) ->
   [];
+insertion_sort([H]) ->
+  [H];
 insertion_sort([H|T]) ->
   insert(H, insertion_sort(T)).
 \end{code}
