@@ -1775,9 +1775,9 @@ meg, és keretrendszert biztosít összetettebb, hibatűrő rendszerek építés
 szolgáltató -- példaprogramot, amely az OTP infrastruktúrára épülve bizosítja a
 redundáns és \emph{soft real-time} működést a weben. A felhasználó a websocket
 protokoll segítségével \emph{azonnal} láthatja a böngészőjében a tőzsdéről érkező
-adatokat. Az üzemltető -- tegyük fel -- kis cégnek lehetősgée van arra, hogy az
+adatokat. Az üzemeltető -- tegyük fel -- kis cégnek lehetősége van arra, hogy az
 üzlet sikerével párhuzamosan növelje a szerver-klaszter kapacitását: egyszerűen
-csak el kell indítani egy újab node-ot, és azzal ,,megpingetni'' az egyik
+csak el kell indítani egy újabb node-ot, és azzal ,,megpingetni'' az egyik
 tagját a hálózatának. Onnantól kezdve az új gép is teljes jogú taggá vált.
 
 A cél elsősorban az Erlang alapvető tulajdonságainak bemutatása volt, nem
@@ -1791,7 +1791,9 @@ folyamatra bízni a hiba kezelését (ha szükséges). Ez a megoldás átláthat
 függelékben néhány lista-függvénnyel ízelítőt adunk a rekurzív programozásból,
 az imperatív programozás világában élő szoftverfejlesztőknek (és ez a nagyon
 nagy többség) hasznos lehet egy rövidke kitekintés, van élet a C-n, Java-n
-kívül is.
+kívül is. A dolgozat -- szándékosan -- nem foglalkozik más nyelvekkel, de nem
+állítja, hogy az Erlang lenne az egyedüli üdvözítő út. A más nyelvekkel való
+összehasonlítás (a Scala-t kell itt megemlíteni) egy külön írás tárgya lehetne.
 
 A dolgozat terjedelmi korlátai miatt nem tudtunk kitérni minden alkalmazási
 lehetőségre. További vizsgálódás tárgya lehet a példaprogram világméretű
@@ -1821,8 +1823,8 @@ szerverek tetszés szerint munkára foghatók. Egy-egy, a standard üzenetküld�
 rendszeren keresztül kapott modul végezhet valamilyen számítást, amíg másik
 modult nem küld a működtető, vagy amíg el nem végzi a feladatát. Ha feladat
 egyszerű, és egy függvényben leírható, akkor elég ezt a függvényt
-felparaméterezve elküldeni a node-re, majd begyűjteni az eredményt
-(a \texttt{spawn} a hálózat tetszőleges node-on működik). Ezzel a
+felparaméterezve elküldeni a node-ra, majd begyűjteni az eredményt
+(a \texttt{spawn} a hálózat tetszőleges node-jára működik). Ezzel a
 módszerrel viszonylag egyszerűen ki lehet használni az egyetemi
 hálózat gépeinek üres CPU ciklusait, egyetlen nagy klaszterént munkára fogva a
 gépeket időigényes feladatok elvégzéséhez.
