@@ -10,11 +10,21 @@
 \pagestyle{fancy}
 
 \begin{document}
+\fancyhead[LR]{}
+\titlepage
 \begin{center}
 \Large{Erlang/OTP}\\
 \vspace{0.3cm}
 \large{Magas rendelkezésre állású, elosztott rendszerek
-fejlesztése}
+fejlesztése}\\
+\vspace{0.5cm}
+\emph{annotáció}\\
+\vspace{0.5cm}
+{\small Készítette: Czinkos Zsolt, Gazdaságinformatikus Szak (BSc)}\\
+\vspace{0.2cm}
+{\small Konzulens: Dr. Fodor Szabina}\\
+\vspace{0.5cm}
+{\small 2012}
 \vspace{1.5cm}
 \end{center}
 
@@ -40,7 +50,7 @@ minden adatot, ami a feladata elvégzéséhez szükséges. Ugyanazokkal a
 paraméterekkel meghívva mindig ugyanazt az eredményt adja vissza, akárcsak
 például az \texttt{f(x) = x + 1} függvény (\emph{referential transaparency}).
 \item Másrészt az Erlang folyamatok (\emph{process}) közti kommunikációt
-aszinkron üzenetküldés-fogadás teszi lehetővé; az aktor modellnek megfelelően
+aszinkron üzenetküldés teszi lehetővé; az aktor modellnek megfelelően
 a rendszert aktorok alkotják, amelyek bizonyos viselkedésmintával rendelkeznek,
 és képesek üzenetet küldeni, fogadni, további aktorokat létrehozni.
 \end{itemize}
@@ -49,6 +59,14 @@ A dolgozat bemutatja az Erlang nyelv alapvető elemeit (példákkal segítve a
 megértést) és az Open Telecom Platform szoftverkönyvtár alapelveit, működési
 mechanizmusát. Az alapozás után egy egyszerű webes alkalmazás megépítését
 követi végig lépésről lépésre, kódrészletekkel bemutatva a gyakorlatot. A
-dolgozat végére összeálló rendszer 
+dolgozat végére összeálló rendszer tőzsdei kereskedési adatokat továbbít a
+böngésző előtt ülő felhasználóknak, azonnal (\emph{real-time}) vagy a
+beállított késleltetéssel. A szolgáltatást Erlang node-okból álló klaszter
+biztosítja, amely a terhelés növekedésével egyszerűen, pusztán egy újabb node
+hozzákapcsolásával bővíthető.
+
+A példaprogram felépítése során a dolgozat bemutatja az Erlang azon
+tulajdonságait, amelyek lehetővé teszik a folyamatos működést biztosító
+rendszerek fejlesztését.
 
 \end{document}
