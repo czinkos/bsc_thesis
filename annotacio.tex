@@ -1,0 +1,54 @@
+\documentclass[12pt, a4paper, oneside]{book}
+\usepackage[left=3.0cm, top=3.0cm, right=2.5cm, bottom=3.0cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,hungarian]{babel}
+\selectlanguage{hungarian}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+
+\pagestyle{fancy}
+
+\begin{document}
+\begin{center}
+\Large{Erlang/OTP}\\
+\vspace{0.3cm}
+\large{Magas rendelkezésre állású, elosztott rendszerek
+fejlesztése}
+\vspace{1.5cm}
+\end{center}
+
+\onehalfspacing
+
+Az Erlang nyelvet az Ericsson-nál hozták létre rendkívül magas rendelkezésre
+állású telefonrendszerek fejlesztéséhez 1986-tól kezdődően. Az 1998-ban nyílt
+forráskódúvá vált Erlang nyelvet -- és a platformba foglalt Open Telecom
+Platform (OTP) keretrendszert -- ma már a telekom iparon kívül is használják,
+elsősorban skálázható, magas rendelkezésre állású rendszerek építéséhez. Az
+Erlang megalkotásánál az elsődleges cél magas rendelkezésre állású, hibatűrő
+rendszerek építése volt (a folyamatos működést nem szakíthatja meg
+szoftverfrissítés sem). A megfelelő redundancia csak egynél több géppel
+biztosítható, ezért olyan megoldásra volt szükség, amely lehetővé teszi, hogy
+magas szintű, erre a célra kialakított nyelven lehessen a megszokottnál
+egyszerűbben párhuzamos (konkurens) programokat fejleszteni. Az Erlang két
+alapra építve éri ezt el: 
+
+\begin{itemize}
+\item Egyrészt funkcionális nyelv, nincs megosztott állapot-változó a
+rendszerben -- \emph{no shared state}, minden függvény megkap paraméterként
+minden adatot, ami a feladata elvégzéséhez szükséges. Ugyanazokkal a
+paraméterekkel meghívva mindig ugyanazt az eredményt adja vissza, akárcsak
+például az \texttt{f(x) = x + 1} függvény (\emph{referential transaparency}).
+\item Másrészt az Erlang folyamatok (\emph{process}) közti kommunikációt
+aszinkron üzenetküldés-fogadás teszi lehetővé; az aktor modellnek megfelelően
+a rendszert aktorok alkotják, amelyek bizonyos viselkedésmintával rendelkeznek,
+és képesek üzenetet küldeni, fogadni, további aktorokat létrehozni.
+\end{itemize}
+
+A dolgozat bemutatja az Erlang nyelv alapvető elemeit (példákkal segítve a
+megértést) és az Open Telecom Platform szoftverkönyvtár alapelveit, működési
+mechanizmusát. Az alapozás után egy egyszerű webes alkalmazás megépítését
+követi végig lépésről lépésre, kódrészletekkel bemutatva a gyakorlatot. A
+dolgozat végére összeálló rendszer 
+
+\end{document}
