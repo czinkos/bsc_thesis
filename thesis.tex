@@ -1765,15 +1765,33 @@ mikéntjére. Az Erlang rendszerek magas rendelkezésre állása és skálázhat
 ugyanarról a tőről fakad: az egymástól függetlenül működő process-ek
 önállósága, a köztük lévő kommunikációt biztosító aszinkron üzenetküldési
 metódus (aktor modell) a funkcionális programozási elvekkel együttesen teszik
-lehetővé elosztott rendszerek fejlesztését. A nyelvet a kezdetektől erre a
-célra fejlesztették, az Erlang magas szintű nyelvként biztosítja a fejlesztő
-számára a fentiek egyszerű használatát. A nyelvi alapokra épül az Erlang
-kiforrott, számtalan üzleti projektben használt szoftverkönyvtára, az Open
-Telecom Platform (OTP). Az OTP a leggyakoribb programozási mintákat valósítja
+lehetővé elosztott rendszerek fejlesztését. A nyelvet a kezdetektől fogva
+folyamatos működést biztosító szoftverek fejlesztésére fejlesztették, az Erlang 
+magas szintű nyelvként biztosítja a fejlesztő számára az egyszerű megvalósítást. 
+Az Erlang kiforrott, számtalan üzleti projektben használt szoftverkönyvtára, az Open
+Telecom Platform (OTP), a leggyakoribb programozási mintákat valósítja
 meg, és keretrendszert biztosít összetettebb, hibatűrő rendszerek építéséhez.
 Állatorvosi lóként megvizsgáltunk egy egyszerű -- tőzsdei kereskedési adatokat
 szolgáltató -- példaprogramot, amely az OTP infrastruktúrára épülve bizosítja a
-redundáns és \emph{soft real-time} működést a weben.
+redundáns és \emph{soft real-time} működést a weben. A felhasználó a websocket
+protokoll segítségével \emph{azonnal} láthatja a böngészőjében a tőzsdéről érkező
+adatokat. Az üzemltető -- tegyük fel -- kis cégnek lehetősgée van arra, hogy az
+üzlet sikerével párhuzamosan növelje a szerver-klaszter kapacitását: egyszerűen
+csak el kell indítani egy újab node-ot, és azzal ,,megpingetni'' az egyik
+tagját a hálózatának. Onnantól kezdve az új gép is teljes jogú taggá vált.
+
+A cél elsősorban az Erlang alapvető tulajdonságainak bemutatása volt, nem
+néztük meg részletesen a fejlesztéssel járó programozási gyakorlatot (pl. unit
+tesztek írása, modulok megfelelő szervezése), programozási elveket. A
+hibakezelésről volt szó: a mindig előforduló szoftverhibákat nem kell megpróbálni
+a kódban észrevenni és kezelni (pl. a java try-catch szisztémája szerint),
+hanem hagyni kell a hibás process-t leállni, és az őt monitorozó másik
+folyamatra bízni a hiba kezelését (ha szükséges). Ez a megoldás átláthatóbb
+és kevesebb kódot eredményez -- kevesebb kód, kevesebb hibalehetőség. A B.
+függelékben néhány lista-függvénnyel ízelítőt adunk a rekurzív programozásból,
+az imperatív programozás világában élő szoftverfejlesztőknek (és ez a nagyon
+nagy többség) hasznos lehet egy rövidke kitekintés, van élet a C-n, Java-n
+kívül is.
 
 A dolgozat terjedelmi korlátai miatt nem tudtunk kitérni minden alkalmazási
 lehetőségre. További vizsgálódás tárgya lehet a példaprogram világméretű
@@ -1781,7 +1799,9 @@ előfizetői kör kiszolgálására alkalmas változatának kifejlesztése, anna
 bemutatása, hogyan lehet több ezer számítógépen rendszert működtetni. 
 Visszautalva a CAP-elméletre: ilyen méretű rendszernél, ha tartani akarjuk a
 megfelelő válaszidőt, az adat nem lesz minden időpillanatban konzisztens
-(\emph{eventual consistency}). 
+(\emph{eventual consistency}). Ilyen nagy rendszernél a hálózati látencia, a
+hálózati hibák kezelése, a keresett adat megtalálása (mely gépeken van a
+százezerből) mind mind komoly feladatot jelent, amelyeket kezelni kell tudni.
 
 További alkalmazási terület lehet az adat- vagy szövegbányászat
 (például üzleti intelligencia rendszerekben). Egy egyedülálló gép kapacitásait
@@ -1794,12 +1814,15 @@ feldogozása (reduce) kézenfekvő feladat az Erlang process-intézményével.
 
 Érdekes feladat lenne időigényes gazdasági, statisztikai számítások
 megvalósítása például az egyetemi hálózaton. Minden egyes gépen el lehet
-indítani egy ,,üres'' Erlang node-ot, ami alapesetben nem végez semmilyen
+indítani egy Erlang node-ot, ami alapesetben nem végez semmilyen
 feladatot, nem terheli észrevehetően a processzort; a hallgató a gép előtt ülve
-észre sem veszi, hogy nem csak a passziánsz fut a gépen. Ezek az ,,üres''
+észre sem veszi, hogy nem csak a passziánsz fut a gépen. Ezek a 
 szerverek tetszés szerint munkára foghatók. Egy-egy, a standard üzenetküldési
 rendszeren keresztül kapott modul végezhet valamilyen számítást, amíg másik
-modult nem küld a működtető, vagy amíg el nem végzi a feladatát.  Ezzel a
+modult nem küld a működtető, vagy amíg el nem végzi a feladatát. Ha feladat
+egyszerű, és egy függvényben leírható, akkor elég ezt a függvényt
+felparaméterezve elküldeni a node-re, majd begyűjteni az eredményt
+(a \texttt{spawn} a hálózat tetszőleges node-on működik). Ezzel a
 módszerrel viszonylag egyszerűen ki lehet használni az egyetemi
 hálózat gépeinek üres CPU ciklusait, egyetlen nagy klaszterént munkára fogva a
 gépeket időigényes feladatok elvégzéséhez.
